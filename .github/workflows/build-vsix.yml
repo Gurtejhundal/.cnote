@@ -1,0 +1,46 @@
+name: Build VSIX
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'downloads/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Package VSIX
+        run: |
+          mkdir -p downloads
+          npx vsce package -o downloads/codenote-6.0.0.vsix
+
+      - name: Publish installable VSIX to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/codenote-6.0.0.vsix
+          if git diff --cached --quiet; then
+            echo "VSIX unchanged"
+          else
+            git commit -m "Build CodeNote 6.0.0 VSIX"
+            git push
+          fi
