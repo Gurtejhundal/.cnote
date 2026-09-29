@@ -50,12 +50,10 @@ jobs:
           import re
           p = Path('README.md')
           text = p.read_text(encoding='utf-8')
-          # VSCE rejects SVG images referenced from README. Keep the rich GitHub
-          # README in the repository, but remove those image tags only while packaging.
           text = re.sub(r'<img\b[^>]*\.svg[^>]*>', '', text, flags=re.I)
           p.write_text(text, encoding='utf-8')
           PY
-          npx vsce package -o downloads/codenote-6.1.1.vsix
+          npx vsce package -o downloads/codenote-6.2.0.vsix
           cp /tmp/README.github.md README.md
 
       - name: Publish installable VSIX and icon to repository
@@ -63,10 +61,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -- README.md package-lock.json 2>/dev/null || true
-          git add -f downloads/codenote-6.1.1.vsix media/cnote-icon.png
+          git add -f downloads/codenote-6.2.0.vsix media/cnote-icon.png
           if git diff --cached --quiet; then
             echo "Release assets unchanged"
           else
-            git commit -m "Build .cnote 6.1.1 release assets"
+            git commit -m "Build .cnote 6.2.0 release assets"
             git push
           fi
