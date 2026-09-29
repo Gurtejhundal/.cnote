@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the 256x256 .cnote Marketplace/Extensions icon.
+"""Generate the crisp 256x256 .cnote extension icon.
 
-Uses only Python's standard library so CI can build the PNG deterministically.
-The visual is a compact `.c` mark derived from the blue/cyan/purple/pink .cnote wordmark.
+Static brand colors, no glow: deep navy tile, cyan left bracket,
+magenta right bracket, and a lavender pencil replacing the slash in </>.
 """
 from __future__ import annotations
 
@@ -12,31 +12,22 @@ import zlib
 from pathlib import Path
 
 SIZE = 256
-SCALE = 3
+SCALE = 4
 W = H = SIZE * SCALE
 OUT = Path(__file__).resolve().parents[1] / "media" / "cnote-icon.png"
 
-STOPS = [
-    (0.00, (92, 124, 255)),
-    (0.42, (111, 232, 255)),
-    (0.72, (168, 121, 255)),
-    (1.00, (240, 97, 220)),
-]
+NAVY = (12, 19, 43)
+NAVY_2 = (20, 29, 66)
+CYAN = (51, 205, 245)
+BLUE = (56, 125, 255)
+MAGENTA = (236, 83, 214)
+PURPLE = (132, 83, 246)
+LAVENDER = (216, 203, 255)
+WHITE = (248, 248, 252)
 
 
-def lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
-
-
-def grad(t: float) -> tuple[int, int, int]:
-    t = max(0.0, min(1.0, t))
-    for i in range(len(STOPS) - 1):
-        p0, c0 = STOPS[i]
-        p1, c1 = STOPS[i + 1]
-        if t <= p1:
-            u = (t - p0) / (p1 - p0)
-            return tuple(round(lerp(c0[j], c1[j], u)) for j in range(3))
-    return STOPS[-1][1]
+def clamp(v: float) -> float:
+    return max(0.0, min(1.0, v))
 
 
 def rounded_rect_sdf(x: float, y: float, cx: float, cy: float, hx: float, hy: float, r: float) -> float:
@@ -44,92 +35,108 @@ def rounded_rect_sdf(x: float, y: float, cx: float, cy: float, hx: float, hy: fl
     qy = abs(y - cy) - (hy - r)
     ox = max(qx, 0.0)
     oy = max(qy, 0.0)
-    outside = math.hypot(ox, oy)
-    inside = min(max(qx, qy), 0.0)
-    return outside + inside - r
+    return math.hypot(ox, oy) + min(max(qx, qy), 0.0) - r
 
 
-def blend(dst: tuple[float, float, float, float], src_rgb: tuple[int, int, int], src_a: float):
+def capsule_distance(x: float, y: float, ax: float, ay: float, bx: float, by: float) -> float:
+    abx, aby = bx - ax, by - ay
+    apx, apy = x - ax, y - ay
+    denom = abx * abx + aby * aby
+    t = 0.0 if denom == 0 else clamp((apx * abx + apy * aby) / denom)
+    px, py = ax + abx * t, ay + aby * t
+    return math.hypot(x - px, y - py)
+
+
+def rotate(x: float, y: float, cx: float, cy: float, angle: float) -> tuple[float, float]:
+    s, c = math.sin(angle), math.cos(angle)
+    dx, dy = x - cx, y - cy
+    return (dx * c + dy * s + cx, -dx * s + dy * c + cy)
+
+
+def blend(dst: tuple[float, float, float, float], rgb: tuple[int, int, int], alpha: float):
     dr, dg, db, da = dst
-    a = max(0.0, min(1.0, src_a))
-    out_a = a + da * (1.0 - a)
-    if out_a <= 0:
-        return (0.0, 0.0, 0.0, 0.0)
-    sr, sg, sb = (c / 255.0 for c in src_rgb)
+    a = clamp(alpha)
+    if a <= 0:
+        return dst
+    sr, sg, sb = (v / 255.0 for v in rgb)
+    oa = a + da * (1 - a)
     return (
-        (sr * a + dr * da * (1.0 - a)) / out_a,
-        (sg * a + dg * da * (1.0 - a)) / out_a,
-        (sb * a + db * da * (1.0 - a)) / out_a,
-        out_a,
+        (sr * a + dr * da * (1 - a)) / oa,
+        (sg * a + dg * da * (1 - a)) / oa,
+        (sb * a + db * da * (1 - a)) / oa,
+        oa,
     )
 
 
+def aa(distance: float, width: float = 1.0) -> float:
+    return clamp(0.5 - distance / width)
+
+
 def pixel(px: int, py: int) -> tuple[int, int, int, int]:
-    # Coordinates in final 256x256 design space.
     x = (px + 0.5) / SCALE
     y = (py + 0.5) / SCALE
 
-    # Transparent outside the rounded-square app tile.
-    sdf = rounded_rect_sdf(x, y, 128, 128, 116, 116, 38)
-    edge_alpha = max(0.0, min(1.0, 1.2 - sdf))
-    if edge_alpha <= 0:
+    tile = rounded_rect_sdf(x, y, 128, 128, 116, 116, 36)
+    alpha = aa(tile, 1.2)
+    if alpha <= 0:
         return (0, 0, 0, 0)
 
-    # Deep neutral background, slightly brighter toward the mark.
-    vignette = max(0.0, 1.0 - math.hypot(x - 128, y - 128) / 180)
-    base = (round(8 + 6 * vignette), round(10 + 7 * vignette), round(18 + 10 * vignette), 1.0)
+    base = (NAVY[0] / 255, NAVY[1] / 255, NAVY[2] / 255, 1.0)
+    if x + y < 155:
+        base = blend(base, NAVY_2, 0.55)
 
-    # Soft inner border.
-    if -2.2 < sdf < 0.8:
-        base = blend(base, (255, 255, 255), 0.08 * (1.0 - abs(sdf) / 2.2))
+    top_curve = math.hypot(x - 25, y - 5)
+    if y < 92 and x < 150 and top_curve < 142:
+        base = blend(base, CYAN, 0.78)
+    if y < 74 and x < 160 and top_curve < 118:
+        base = blend(base, BLUE, 0.58)
 
-    # Dot at the left: the literal '.' in .cnote.
-    dot_x, dot_y, dot_r = 55.0, 137.0, 17.0
-    dd = math.hypot(x - dot_x, y - dot_y)
+    br_curve = math.hypot(x - 240, y - 255)
+    if x > 88 and y > 150 and br_curve < 158:
+        base = blend(base, PURPLE, 0.72)
+    if x > 125 and y > 180 and br_curve < 118:
+        base = blend(base, MAGENTA, 0.88)
 
-    # C ring. Opening is on the right side.
-    cx, cy = 148.0, 128.0
-    dx, dy = x - cx, y - cy
-    rr = math.hypot(dx, dy)
-    angle = math.degrees(math.atan2(dy, dx))
-    # Gap centered on +x axis; rounded-ish caps come from angular falloff.
-    gap = abs(angle) < 40
-    ring_distance = abs(rr - 63.0)
+    thickness = 10.5
+    segments = [
+        ((83, 89), (54, 118), CYAN),
+        ((54, 118), (83, 147), CYAN),
+        ((173, 89), (202, 118), MAGENTA),
+        ((202, 118), (173, 147), MAGENTA),
+    ]
+    for (ax, ay), (bx, by), color in segments:
+        d = capsule_distance(x, y, ax, ay, bx, by) - thickness
+        a = aa(d, 1.0)
+        if a > 0:
+            base = blend(base, color, a)
 
-    # Glow before solid mark.
-    color = grad((x - 32) / 190)
-    dot_glow = max(0.0, 1.0 - max(0.0, dd - dot_r) / 18.0)
-    ring_glow = 0.0 if gap else max(0.0, 1.0 - max(0.0, ring_distance - 15.0) / 20.0)
-    glow = max(dot_glow, ring_glow)
-    if glow > 0:
-        base = blend(base, color, 0.18 * glow * glow)
+    rx, ry = rotate(x, y, 128, 120, math.radians(-18))
+    body = rounded_rect_sdf(rx, ry, 128, 120, 10, 34, 4)
+    body_a = aa(body, 1.0)
+    if body_a > 0:
+        base = blend(base, LAVENDER, body_a)
 
-    # Main dot/ring with antialiasing from distance.
-    dot_alpha = max(0.0, min(1.0, dot_r + 0.8 - dd))
-    ring_alpha = 0.0 if gap else max(0.0, min(1.0, 14.8 - ring_distance))
+    cap = rounded_rect_sdf(rx, ry, 128, 84, 10, 7, 5)
+    cap_a = aa(cap, 1.0)
+    if cap_a > 0:
+        base = blend(base, WHITE, cap_a)
 
-    # Rounded C terminals around ±40° by adding two terminal circles.
-    for a in (-40.0, 40.0):
-        rad = math.radians(a)
-        tx = cx + math.cos(rad) * 63.0
-        ty = cy + math.sin(rad) * 63.0
-        td = math.hypot(x - tx, y - ty)
-        ring_alpha = max(ring_alpha, max(0.0, min(1.0, 14.8 - td)))
+    if 147 <= ry <= 157:
+        half = max(0.0, (157 - ry) * 0.42)
+        if abs(rx - 128) <= half:
+            base = blend(base, LAVENDER, 1.0)
 
-    mark_alpha = max(dot_alpha, ring_alpha)
-    if mark_alpha > 0:
-        # Highlight at the top-left gives the mark a polished/glassy feel.
-        base = blend(base, color, mark_alpha)
-        highlight = max(0.0, min(1.0, (0.45 - (x + y) / 512.0) * 2.0))
-        if highlight > 0:
-            base = blend(base, (255, 255, 255), 0.15 * highlight * mark_alpha)
+    sep = rounded_rect_sdf(rx, ry, 128, 145.2, 10.2, 1.5, 1)
+    sep_a = aa(sep, 0.9)
+    if sep_a > 0:
+        base = blend(base, NAVY, sep_a)
 
     r, g, b, a = base
     return (
-        round(max(0, min(1, r)) * 255),
-        round(max(0, min(1, g)) * 255),
-        round(max(0, min(1, b)) * 255),
-        round(max(0, min(1, a * edge_alpha)) * 255),
+        round(clamp(r) * 255),
+        round(clamp(g) * 255),
+        round(clamp(b) * 255),
+        round(clamp(a * alpha) * 255),
     )
 
 
@@ -138,12 +145,11 @@ def png_chunk(kind: bytes, data: bytes) -> bytes:
 
 
 def write_png(path: Path) -> None:
-    # Supersample, then box-filter to 256x256.
     high = [[pixel(x, y) for x in range(W)] for y in range(H)]
     rows = bytearray()
     area = SCALE * SCALE
     for y in range(SIZE):
-        rows.append(0)  # PNG filter: None
+        rows.append(0)
         for x in range(SIZE):
             sums = [0, 0, 0, 0]
             for sy in range(SCALE):
