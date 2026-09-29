@@ -13,7 +13,7 @@ import { VisualModeManager } from './visualMode';
 import { SnapStudioManager } from './snapStudio';
 import { SettingsPanel } from './settingsPanel';
 
-type NotePick = vscode.QuickPickItem & { noteKind: NoteKind };
+type NotePick = vscode.QuickPickItem & { noteKind: NoteKind; compact?: 'line' | 'heading' };
 type MenuPick = vscode.QuickPickItem & { command: string };
 
 // Keep the old parser kinds for backwards compatibility, but do not offer
@@ -173,7 +173,7 @@ async function insertNote(): Promise<void> {
   if (!editor) return void vscode.window.showErrorMessage('Open a source file first.');
   const kind = await pickNoteKind();
   if (!kind) return;
-  const snippet = noteSnippet(editor.document.languageId, kind);
+  const snippet = noteSnippet(editor.document.languageId, kind.noteKind, kind.compact);
   if (!snippet) return unsupported(editor.document.languageId);
   const line = editor.document.lineAt(editor.selection.active.line);
   const indent = line.text.match(/^\s*/)?.[0] ?? '';
@@ -197,7 +197,7 @@ async function annotateSelection(): Promise<void> {
   await editor.insertSnippet(new vscode.SnippetString(text), line.range.start, { undoStopBefore: true, undoStopAfter: true });
 }
 
-async function pickNoteKind(): Promise<NoteKind | undefined> {
+async function pickNoteKind(): Promise<NotePick | undefined> {
   const details: Record<NoteKind, string> = {
     paragraph: 'Legacy plain prose block',
     note: 'General explanation or concept note',
@@ -211,19 +211,24 @@ async function pickNoteKind(): Promise<NoteKind | undefined> {
     example: 'Worked example with a starting point and result',
     todo: 'Learning or coding task'
   };
-  const items: NotePick[] = INSERT_NOTE_KINDS.map(noteKind => ({
-    label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
-    detail: details[noteKind],
-    noteKind
-  }));
+  const items: NotePick[] = [
+    { label: '• Line note', detail: 'One highlighted line. Source stays one line.', noteKind: 'note', compact: 'line' },
+    { label: '# Heading', detail: 'One highlighted heading. Source stays one line.', noteKind: 'section', compact: 'heading' },
+    ...INSERT_NOTE_KINDS.map(noteKind => ({
+      label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
+      detail: details[noteKind],
+      noteKind
+    }))
+  ];
   const pick = await vscode.window.showQuickPick(items, {
     placeHolder: 'Pick a note type · each one has its own visual language',
     matchOnDetail: true
   });
-  return pick?.noteKind;
+  return pick;
 }
 
-function noteSnippet(languageId: string, kind: NoteKind): string | undefined {
+function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'heading'): string | undefined {
+  if (compact) return singleLineSnippet(languageId, kind, compact === 'heading' ? '${1:Heading}' : '${1:Write your note.}');
   const content: Record<NoteKind, string[]> = {
     paragraph: ['${1:Write your note here.}'],
     note: ['# ${1:Topic}', '${2:Write your explanation here.}'],
@@ -238,6 +243,13 @@ function noteSnippet(languageId: string, kind: NoteKind): string | undefined {
     todo: ['- [ ] ${1:Write the task.}']
   };
   return wrapLines(languageId, kind, content[kind]);
+}
+
+function singleLineSnippet(languageId: string, kind: string, text: string): string | undefined {
+  const adapter = getLanguageAdapter(languageId);
+  if (!adapter) return undefined;
+  const c = adapter.comment;
+  return c.type === 'block' ? `${c.open} @${kind} ${text} ${c.close}` : `${c.prefix} @${kind} ${text}`;
 }
 
 function wrapLines(languageId: string, kind: string, lines: string[]): string | undefined {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.4
+- Add one-line note and heading inserts that render from a single source line.
+- Render single-line .cnote comments without opener/closer symbols and remove the note-heading sparkle prefix.
+
 ## 6.2.3
 - Use the approved website logo as the VS Code extension icon and release asset icon.
 

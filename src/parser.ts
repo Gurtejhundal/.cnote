@@ -49,14 +49,15 @@ function parseBlockStyle(document: vscode.TextDocument, open: string, close: str
     const endOffset = re.lastIndex;
     const kind = match[1].toLowerCase() as NoteKind;
     const body = cleanBlockBody(match[2]);
-    blocks.push(buildBlock(document, kind, match[0], body, startOffset, endOffset));
+    const lineBody = document.positionAt(startOffset).line === document.positionAt(endOffset).line ? body.trim() : body;
+    blocks.push(buildBlock(document, kind, match[0], lineBody, startOffset, endOffset));
   }
   return blocks;
 }
 
 function parseLineStyle(document: vscode.TextDocument, prefix: string, endMarker: string): NoteBlock[] {
   const blocks: NoteBlock[] = [];
-  const startRe = new RegExp(`^\\s*${escapeRegExp(prefix)}\\s*@(${KINDS_PATTERN})\\b`, 'i');
+  const startRe = new RegExp(`^\\s*${escapeRegExp(prefix)}\\s*@(${KINDS_PATTERN})\\b(?:\\s+(.*))?\\s*$`, 'i');
   const endRe = new RegExp(`^\\s*${escapeRegExp(prefix)}\\s*${escapeRegExp(endMarker)}\\s*$`, 'i');
   const contentRe = new RegExp(`^\\s*${escapeRegExp(prefix)}(?:\\s?(.*))?$`);
 
@@ -67,6 +68,16 @@ function parseLineStyle(document: vscode.TextDocument, prefix: string, endMarker
 
     const kind = startMatch[1].toLowerCase() as NoteKind;
     const startLine = line;
+    const inlineBody = startMatch[2]?.trim();
+    if (inlineBody) {
+      const endPosition = document.lineAt(line).rangeIncludingLineBreak.end;
+      const startOffset = document.offsetAt(new vscode.Position(line, 0));
+      const endOffset = document.offsetAt(endPosition);
+      const raw = document.getText(new vscode.Range(new vscode.Position(line, 0), endPosition));
+      blocks.push(buildBlock(document, kind, raw, inlineBody, startOffset, endOffset));
+      line += 1;
+      continue;
+    }
     const bodyLines: string[] = [];
     line += 1;
     let foundEnd = false;

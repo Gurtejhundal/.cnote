@@ -153,6 +153,13 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
   const label=cfg.get<boolean>('inlineBoundaryLabel',false);
   const adapter=getLanguageAdapter(document.languageId);
 
+  if(start===end){
+    concealLine(document,start,result);
+    const visual=visualizeSingleLineBlock(block,kindHints,showTags);
+    if(visual)pushVisual(result,visual,renderAtLine(document,start,visual.text));
+    return;
+  }
+
   for(let lineNo=start;lineNo<=end;lineNo++){
     concealLine(document,lineNo,result);
     let visual:VisualLine|undefined;
@@ -191,6 +198,13 @@ function stripCommentPrefix(text:string,comment:any):string{
     value=value.replace(/^\*\s?/,'');
   }
   return value;
+}
+
+function visualizeSingleLineBlock(block:NoteBlock,showKind:boolean,showTags:boolean):VisualLine|undefined{
+  const raw=block.content||block.body;
+  const line=visualizePhysicalLine(raw,block.kind,showKind,showTags,block);
+  if(!line)return undefined;
+  return block.kind==='section'&&line.style==='paragraph'?{style:'h1',text:line.text}:line;
 }
 
 function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:boolean,block:NoteBlock):VisualLine|undefined{
@@ -259,7 +273,6 @@ function decorateHeading(kind:string,text:string):string{
   if(kind==='tip')return`💡 ${text}`;
   if(kind==='example')return`↪ ${text}`;
   if(kind==='todo')return`☐ ${text}`;
-  if(kind==='note')return`✦ ${text}`;
   return text;
 }
 

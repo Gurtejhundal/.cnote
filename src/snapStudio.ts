@@ -496,6 +496,13 @@ function visualLines(document: vscode.TextDocument, start: number, end: number):
       const raw = document.lineAt(line).text;
       const indent = raw.match(/^\s*/)?.[0] ?? '';
 
+      if (blockStart === blockEnd) {
+        const visual = singleBlockLine(block.kind, block.content || block.body);
+        target.text = indent + visual.text;
+        target.kind = visual.kind;
+        continue;
+      }
+
       if (line === blockStart) {
         target.text = indent + boundary(true, style, symbol, showKind ? block.kind : undefined);
         target.kind = 'boundary';
@@ -515,6 +522,11 @@ function visualLines(document: vscode.TextDocument, start: number, end: number):
   }
 
   return result;
+}
+
+function singleBlockLine(kind: string, raw: string): { text: string; kind: SnapLineKind } {
+  const visual = visualMarkdownLine(raw);
+  return kind === 'section' && visual.kind === 'note' ? { text: visual.text, kind: 'heading1' } : visual;
 }
 
 function boundary(open: boolean, style: string, symbol: string, kind?: string): string {
