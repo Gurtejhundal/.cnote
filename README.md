@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/readme/logo.jpg" alt=".cnote" width="620" />
+  <img src="media/readme/logo.svg" alt=".cnote" width="620" />
 </p>
 
 <p align="center"><b>Write code like notes — without leaving your real source file.</b></p>
@@ -13,7 +13,7 @@
 .cnote is free and open source. If it saves you time, helps you study, or makes your code notes less ugly, you can support the project.
 
 <p align="center">
-  <img src="media/readme/upi-qr.jpeg" alt="UPI QR for Gurtejbir Singh" width="330" />
+  <img src="media/readme/upi-qr.svg" alt="UPI QR for Gurtejbir Singh" width="330" />
 </p>
 
 <p align="center"><b>Buy me a PS5 🥺🎮</b><br/>No pressure. Every small contribution helps me keep building weirdly useful stuff.</p>
@@ -30,7 +30,7 @@ Your file stays `.cpp`, `.py`, `.java`, `.js`, `.ts`, `.go`, `.rs`, and so on. C
 
 <table>
 <tr><th>While editing</th><th>When you return to code</th></tr>
-<tr><td><img src="media/readme/raw-note.png" width="420" /></td><td><img src="media/readme/visual-note.png" width="420" /></td></tr>
+<tr><td><img src="media/readme/raw-note.svg" width="420" /></td><td><img src="media/readme/visual-note.svg" width="420" /></td></tr>
 </table>
 
 V6 keeps the **same physical line count** in both states. The comment opener and closer become configurable boundary markers instead of disappearing, so diagnostics and breakpoints do not feel shifted.
@@ -141,7 +141,7 @@ You can also show the note type beside the opening marker.
 
 Select code, or leave nothing selected to capture the visible editor, then open **Snap**.
 
-<p align="center"><img src="media/readme/snap-studio.jpg" alt=".cnote Snap Studio" width="860" /></p>
+<p align="center"><img src="media/readme/snap-studio.svg" alt=".cnote Snap Studio" width="860" /></p>
 
 V6 improvements:
 
