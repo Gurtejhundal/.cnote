@@ -13,31 +13,30 @@ import { VisualModeManager } from './visualMode';
 import { SnapStudioManager } from './snapStudio';
 import { SettingsPanel } from './settingsPanel';
 
+type NotePick = vscode.QuickPickItem & { noteKind: NoteKind };
+
 export function activate(context: vscode.ExtensionContext): void {
   const index = new WorkspaceNoteIndex();
   const review = new ReviewStore(context.workspaceState);
   const outline = new CodeNoteOutlineProvider(index, review);
-  const visualMode = new VisualModeManager();
-  const snapStudio = new SnapStudioManager(context);
-  const settingsPanel = new SettingsPanel();
+  const visual = new VisualModeManager();
+  const snap = new SnapStudioManager(context);
+  const settings = new SettingsPanel();
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 80);
-  const studyPreview = new StudyPreviewManager(
+  let refreshUi = (): void => {};
+  const study = new StudyPreviewManager(
     runDocument,
     exportFileNotes,
     exportStudyPdf,
     review,
-    () => {
-      outline.refresh();
-      updateStatus(vscode.window.activeTextEditor, status, index, review);
-    }
+    () => refreshUi()
   );
-  status.command = 'codenote.openStudyPreview';
 
   const selector: vscode.DocumentSelector = supportedLanguageIds().map(language => ({ language }));
 
-  const refreshActive = (): void => {
+  refreshUi = (): void => {
     const editor = vscode.window.activeTextEditor;
-    visualMode.schedule(editor, 0);
+    visual.schedule(editor, 0);
     outline.refresh();
     updateStatus(editor, status, index, review);
     void vscode.commands.executeCommand(
@@ -47,90 +46,87 @@ export function activate(context: vscode.ExtensionContext): void {
     );
   };
 
+  status.command = 'codenote.openStudyPreview';
+
   context.subscriptions.push(
     vscode.commands.registerCommand('codenote.insertNote', insertNote),
     vscode.commands.registerCommand('codenote.annotateSelection', annotateSelection),
     vscode.commands.registerCommand('codenote.openStudyPreview', async () => {
-      const document = activeSupportedDocument();
-      if (document) await studyPreview.open(document);
+      const doc = activeSupportedDocument();
+      if (doc) await study.open(doc);
     }),
     vscode.commands.registerCommand('codenote.exportStudyPdf', async () => {
-      const document = activeSupportedDocument();
-      if (document) await exportStudyPdf(document);
+      const doc = activeSupportedDocument();
+      if (doc) await exportStudyPdf(doc);
     }),
-    vscode.commands.registerCommand('codenote.openSettings', () => settingsPanel.open()),
+    vscode.commands.registerCommand('codenote.openSettings', () => settings.open()),
     vscode.commands.registerCommand('codenote.openSnapStudio', async () => {
       const editor = vscode.window.activeTextEditor;
-      if (!editor) return void vscode.window.showErrorMessage('Open a code file first.');
-      await snapStudio.open(editor);
-    }),
-    vscode.commands.registerCommand('codenote.openStudyAt', async (uri: vscode.Uri, offset: number) => {
-      const document = await openSupportedDocument(uri);
-      if (document) await studyPreview.open(document, offset);
+      if (!editor) return void vscode.window.showErrorMessage('Open a source file first.');
+      await snap.open(editor);
     }),
     vscode.commands.registerCommand('codenote.runFile', async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return void vscode.window.showErrorMessage('Open a source file first.');
       await runDocument(editor.document);
     }),
+    vscode.commands.registerCommand('codenote.openStudyAt', async (uri: vscode.Uri, offset: number) => {
+      const doc = await vscode.workspace.openTextDocument(uri);
+      if (isSupportedLanguage(doc.languageId)) await study.open(doc, offset);
+    }),
     vscode.commands.registerCommand('codenote.revealBlock', revealBlock),
     vscode.commands.registerCommand('codenote.copyNote', copyNote),
     vscode.commands.registerCommand('codenote.exportNotes', async () => {
-      const document = activeSupportedDocument();
-      if (document) await exportFileNotes(document);
+      const doc = activeSupportedDocument();
+      if (doc) await exportFileNotes(doc);
     }),
     vscode.commands.registerCommand('codenote.exportWorkspaceNotes', async () => {
       await index.scan(true);
       await exportWorkspaceNotes(index.all());
     }),
-    vscode.commands.registerCommand('codenote.searchWorkspace', async () => { await searchWorkspace(index); }),
-    vscode.commands.registerCommand('codenote.startReview', async () => { await startReview(index, review, studyPreview); }),
-    vscode.commands.registerCommand('codenote.showStats', async () => { await showStats(index, review); }),
+    vscode.commands.registerCommand('codenote.searchWorkspace', async () => searchWorkspace(index)),
+    vscode.commands.registerCommand('codenote.startReview', async () => startReview(index, review, study)),
+    vscode.commands.registerCommand('codenote.showStats', async () => showStats(index, review)),
     vscode.commands.registerCommand('codenote.rescanWorkspace', async () => {
       await index.scan(true);
-      outline.refresh();
-      updateStatus(vscode.window.activeTextEditor, status, index, review);
+      refreshUi();
     }),
-    vscode.commands.registerCommand('codenote.refreshOutline', refreshActive),
+    vscode.commands.registerCommand('codenote.refreshOutline', refreshUi),
     vscode.window.registerTreeDataProvider('codenote.notes', outline),
     vscode.languages.registerFoldingRangeProvider(selector, new CodeNoteFoldingProvider()),
-
-    vscode.window.onDidChangeActiveTextEditor(refreshActive),
+    vscode.window.onDidChangeActiveTextEditor(refreshUi),
     vscode.window.onDidChangeTextEditorSelection(event => {
-      if (event.textEditor === vscode.window.activeTextEditor) visualMode.schedule(event.textEditor);
+      if (event.textEditor === vscode.window.activeTextEditor) visual.schedule(event.textEditor);
     }),
     vscode.workspace.onDidChangeTextDocument(event => {
-      visualMode.invalidate(event.document);
+      visual.invalidate(event.document);
       const editor = vscode.window.activeTextEditor;
-      if (editor && event.document === editor.document) visualMode.schedule(editor, 45);
+      if (editor && editor.document === event.document) visual.schedule(editor, 45);
     }),
     vscode.workspace.onDidSaveTextDocument(async document => {
       await index.refreshDocument(document);
-      refreshActive();
+      refreshUi();
     }),
     vscode.workspace.onDidCreateFiles(async () => { await index.scan(false); }),
     vscode.workspace.onDidDeleteFiles(async () => { await index.scan(false); }),
     vscode.workspace.onDidRenameFiles(async () => { await index.scan(false); }),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('codenote')) {
-        visualMode.invalidate();
-        refreshActive();
+        visual.invalidate();
+        refreshUi();
       }
     }),
-    index.onDidChange(() => {
-      outline.refresh();
-      updateStatus(vscode.window.activeTextEditor, status, index, review);
-    }),
+    index.onDidChange(refreshUi),
     status,
     index,
     outline,
-    studyPreview,
-    visualMode,
-    snapStudio,
-    settingsPanel
+    visual,
+    snap,
+    settings,
+    study
   );
 
-  refreshActive();
+  refreshUi();
   void index.scan(false);
 }
 
@@ -139,30 +135,14 @@ export function deactivate(): void {}
 async function insertNote(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) return void vscode.window.showErrorMessage('Open a source file first.');
-  const adapter = getLanguageAdapter(editor.document.languageId);
-  if (!adapter) {
-    return void vscode.window.showErrorMessage(
-      editor.document.languageId === 'json'
-        ? 'Plain JSON cannot contain comments. Use JSONC.'
-        : `CodeNote has no safe comment adapter for ${editor.document.languageId}.`
-    );
-  }
-
   const kind = await pickNoteKind();
   if (!kind) return;
-
-  const line = editor.selection.active.line;
-  const lineObject = editor.document.lineAt(line);
-  const indent = lineObject.text.match(/^\s*/)?.[0] ?? '';
-  const rawSnippet = interactiveNoteSnippet(editor.document.languageId, kind);
-  if (!rawSnippet) return;
-
-  const indented = rawSnippet
-    .split('\n')
-    .map(value => value ? `${indent}${value}` : value)
-    .join('\n') + '\n';
-
-  await editor.insertSnippet(new vscode.SnippetString(indented), lineObject.range.start, { undoStopBefore: true, undoStopAfter: true });
+  const snippet = noteSnippet(editor.document.languageId, kind);
+  if (!snippet) return unsupported(editor.document.languageId);
+  const line = editor.document.lineAt(editor.selection.active.line);
+  const indent = line.text.match(/^\s*/)?.[0] ?? '';
+  const text = snippet.split('\n').map(value => value ? indent + value : value).join('\n') + '\n';
+  await editor.insertSnippet(new vscode.SnippetString(text), line.range.start, { undoStopBefore: true, undoStopAfter: true });
 }
 
 async function annotateSelection(): Promise<void> {
@@ -170,206 +150,161 @@ async function annotateSelection(): Promise<void> {
   if (!editor || editor.selection.isEmpty) {
     return void vscode.window.showInformationMessage('Select the code you want to explain first.');
   }
-  if (!isSupportedLanguage(editor.document.languageId)) {
-    return void vscode.window.showErrorMessage('This language is not supported by CodeNote yet.');
-  }
-
-  const startLine = editor.selection.start.line;
-  const lineObject = editor.document.lineAt(startLine);
-  const indent = lineObject.text.match(/^\s*/)?.[0] ?? '';
-  const rawSnippet = wrapInteractiveLines(editor.document.languageId, 'note', [
+  const snippet = wrapLines(editor.document.languageId, 'note', [
     '# ${1:Explanation}',
-    '${2:Describe what this code does and why.'}'
+    '${2:Describe what this code does and why.}'
   ]);
-  if (!rawSnippet) return;
-  const indented = rawSnippet.split('\n').map(value => value ? `${indent}${value}` : value).join('\n') + '\n';
-  await editor.insertSnippet(new vscode.SnippetString(indented), lineObject.range.start, { undoStopBefore: true, undoStopAfter: true });
+  if (!snippet) return unsupported(editor.document.languageId);
+  const line = editor.document.lineAt(editor.selection.start.line);
+  const indent = line.text.match(/^\s*/)?.[0] ?? '';
+  const text = snippet.split('\n').map(value => value ? indent + value : value).join('\n') + '\n';
+  await editor.insertSnippet(new vscode.SnippetString(text), line.range.start, { undoStopBefore: true, undoStopAfter: true });
 }
 
 async function pickNoteKind(): Promise<NoteKind | undefined> {
-  const labels: Record<NoteKind, { label: string; detail: string }> = {
-    paragraph: { label: 'Paragraph', detail: 'Plain prose between code with no extra visual label' },
-    note: { label: 'Note', detail: 'Explanation or concept note' },
-    section: { label: 'Section', detail: 'Large topic/chapter heading' },
-    definition: { label: 'Definition', detail: 'Define a term or concept' },
-    warning: { label: 'Warning', detail: 'Mistake, edge case or trap' },
-    complexity: { label: 'Complexity', detail: 'Time and space complexity' },
-    quiz: { label: 'Quiz', detail: 'Question + answer with spaced review' },
-    checkpoint: { label: 'Checkpoint', detail: 'Active-recall checkpoint' },
-    tip: { label: 'Tip', detail: 'Rule, shortcut or memory aid' },
-    example: { label: 'Example', detail: 'Worked example' },
-    todo: { label: 'Todo', detail: 'Learning or coding task' }
+  const details: Record<NoteKind, string> = {
+    paragraph: 'Plain prose between code',
+    note: 'Explanation or concept note',
+    section: 'Topic or chapter heading',
+    definition: 'Define a term or concept',
+    warning: 'Mistake, edge case or trap',
+    complexity: 'Time and space complexity',
+    quiz: 'Question and answer for review',
+    checkpoint: 'Active-recall checkpoint',
+    tip: 'Rule, shortcut or memory aid',
+    example: 'Worked example',
+    todo: 'Learning or coding task'
   };
-
-  const pick = await vscode.window.showQuickPick(
-    NOTE_KINDS.map(noteKind => ({ label: labels[noteKind].label, detail: labels[noteKind].detail, noteKind } as vscode.QuickPickItem & { noteKind: NoteKind })),
-    { placeHolder: 'What do you want to write?' }
-  );
+  const items: NotePick[] = NOTE_KINDS.map(noteKind => ({
+    label: noteKind[0].toUpperCase() + noteKind.slice(1),
+    detail: details[noteKind],
+    noteKind
+  }));
+  const pick = await vscode.window.showQuickPick(items, { placeHolder: 'What do you want to write?' });
   return pick?.noteKind;
 }
 
-function interactiveNoteSnippet(languageId: string, kind: NoteKind): string | undefined {
-  let lines: string[];
-  switch (kind) {
-    case 'paragraph':
-      lines = ['${id:entity.zero+1}:Write your note here.}'];
-      break;
-    case 'note':
-      lines = ['# ${1:Topic}', '${id:entity.zero+2}:Write your explanation here.}'];
-      break;
-    case 'section':
-      lines = ["# ${1:Section}", '${id:entity.zero+2}:What this section covers.}'];
-      break;
-    case 'definition':
-      lines = ["# ${1:Concept}", '${id:entity.zero+2}:Write the definition here.}'];
-      break;
-    case 'warning':
-      lines = ['# ${1:Watch out}', '${id:entity.zero+2}:Explain the mistake or edge case.}'];
-      break;
-    case 'complexity':
-      lines = ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`'];
-      break;
-    case 'quiz':
-      lines = ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}'];
-      break;
-    case 'checkpoint':
-      lines = ['question: ${1:What should you be able to recall?}', 'answer: ${2:Write the expected answer.}'];
-      break;
-    case 'tip':
-      lines = ['# ${1:Tip}', '${2:Write the rule or shortcut.}'];
-      break;
-    case 'example':
-      lines = ['# ${1:Example}', '${2:Explain the example.}'];
-      break;
-    case 'todo':
-      lines = ['- [ ] ${1:Write the task.}'];
-      break;
-  }
-  return wrapInteractiveLines(languageId, kind, lines);
+function noteSnippet(languageId: string, kind: NoteKind): string | undefined {
+  const content: Record<NoteKind, string[]> = {
+    paragraph: ['${1:Write your note here.}'],
+    note: ['# ${1:Topic}', '${2:Write your explanation here.}'],
+    section: ['# ${1:Section}', '${2:What this section covers.}'],
+    definition: ['# ${1:Concept}', '${2:Write the definition here.}'],
+    warning: ['# ${1:Watch out}', '${2:Explain the mistake or edge case.}'],
+    complexity: ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`'],
+    quiz: ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}'],
+    checkpoint: ['question: ${1:What should you recall?}', 'answer: ${2:Write the expected answer.}'],
+    tip: ['# ${1:Tip}', '${2:Write the rule or shortcut.}'],
+    example: ['# ${1:Example}', '${2:Explain the example.}'],
+    todo: ['- [ ] ${1:Write the task.}']
+  };
+  return wrapLines(languageId, kind, content[kind]);
 }
 
-function wrapInteractiveLines(languageId: string, kind: string, innerLines: string[]): string | undefined {
+function wrapLines(languageId: string, kind: string, lines: string[]): string | undefined {
   const adapter = getLanguageAdapter(languageId);
   if (!adapter) return undefined;
-  const comment = adapter.comment;
-  if (comment.type === 'block') {
-    return [`${comment.open} @${kind}`, ...innerLines, comment.close].join('\n');
-  }
-  return [
-    `${comment.prefix} @${kind}`,
-    ...innerLines.map(value => value ? `${comment.prefix} ${value}` : comment.prefix),
-    `${comment.prefix} ${comment.endMarker}`
-  ].join('\n');
+  const c = adapter.comment;
+  if (c.type === 'block') return [`${c.open} @${kind}`, ...lines, c.close].join('\n');
+  return [`${c.prefix} @${kind}`, ...lines.map(v => v ? `${c.prefix} ${v}` : c.prefix), `${c.prefix} ${c.endMarker}`].join('\n');
+}
+
+function unsupported(languageId: string): void {
+  vscode.window.showErrorMessage(languageId === 'json' ? 'Plain JSON cannot contain comments. Use JSONC.' : `No safe CodeNote comment adapter for ${languageId}.`);
 }
 
 async function searchWorkspace(index: WorkspaceNoteIndex): Promise<void> {
   if (!index.count()) await index.scan(true);
   const notes = index.all();
-  if (!notes.length) return void vscode.window.showInformationMessage('No CodeNote blocks found in this workspace.');
-  const pick = await vscode.window.showQuickPick(
-    notes.map(note => ({
-      label: note.block.title,
-      description: `${note.block.kind} · ${note.relativePath}:L${note.block.range.start.line + 1}`,
-      detail: note.block.metadata.tags.map(tag => `#${tag}`).join(' '),
-      note
-    })),
-    { placeHolder: `Search ${notes.length} workspace notes`, matchOnDescription: true, matchOnDetail: true }
-  );
+  if (!notes.length) return void vscode.window.showInformationMessage('No .cnote blocks found in this workspace.');
+  const items = notes.map(note => ({
+    label: note.block.title,
+    description: `${note.block.kind} · ${note.relativePath}:L${note.block.range.start.line + 1}`,
+    detail: note.block.metadata.tags.map(tag => `#${tag}`).join(' '),
+    note
+  }));
+  const pick = await vscode.window.showQuickPick(items, { placeHolder: `Search ${notes.length} workspace notes`, matchOnDescription: true, matchOnDetail: true });
   if (pick) await revealBlock(pick.note.uri, pick.note.block.startOffset);
 }
 
-async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, preview: StudyPreviewManager): Promise<void> {
+async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, study: StudyPreviewManager): Promise<void> {
   if (!index.count()) await index.scan(true);
   const due = index.all().filter(note => review.isDue(note.uri, note.block));
   if (!due.length) return void vscode.window.showInformationMessage('No quizzes are due.');
   const pick = await vscode.window.showQuickPick(
-    due.map(note => ({
-      label: note.block.title,
-      description: `${note.relativePath} · ${note.block.metadata.difficulty || 'unrated'}`,
-      note
-    })),
+    due.map(note => ({ label: note.block.title, description: note.relativePath, note })),
     { placeHolder: `${due.length} review item${due.length === 1 ? '' : 's'} due` }
   );
   if (!pick) return;
   const doc = await vscode.workspace.openTextDocument(pick.note.uri);
-  await preview.open(doc, pick.note.block.startOffset);
+  await study.open(doc, pick.note.block.startOffset);
 }
 
 async function showStats(index: WorkspaceNoteIndex, review: ReviewStore): Promise<void> {
   if (!index.count()) await index.scan(true);
   const all = index.all();
   const files = new Set(all.map(note => note.uri.toString())).size;
-  const quizzes = all.filter(note => note.block.kind === 'quiz' || note.block.kind === 'checkpoint');
-  const due = quizzes.filter(note => review.isDue(note.uri, note.block)).length;
-  const topTags = index.tags().slice(0, 5).map(item => `#${item.tag} (${item.count})`).join(', ') || 'none';
-  vscode.window.showInformationMessage(`CodeNote: ${all.length} notes · ${files} files · ${quizzes.length} review cards · ${due} due · top tags: ${topTags}`);
+  const cards = all.filter(note => note.block.kind === 'quiz' || note.block.kind === 'checkpoint');
+  const due = cards.filter(note => review.isDue(note.uri, note.block)).length;
+  vscode.window.showInformationMessage(`.cnote: ${all.length} notes · ${files} files · ${cards.length} review cards · ${due} due`);
 }
 
 async function revealBlock(uri: vscode.Uri, offset: number): Promise<void> {
-  const document = await vscode.workspace.openTextDocument(uri);
-  const editor = await vscode.window.showTextDocument(document, { preview: false });
-  const position = document.positionAt(Math.max(0, Math.min(offset, document.getText().length)));
-  editor.selection = new vscode.Selection(position, position);
-  editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const editor = await vscode.window.showTextDocument(doc, { preview: false });
+  const pos = doc.positionAt(Math.max(0, Math.min(offset, doc.getText().length)));
+  editor.selection = new vscode.Selection(pos, pos);
+  editor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.InCenter);
 }
 
 async function copyNote(uri: vscode.Uri, offset: number): Promise<void> {
-  const document = await vscode.workspace.openTextDocument(uri);
-  const block = parseNoteBlocks(document).find(item => item.startOffset === offset);
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const block = parseNoteBlocks(doc).find(item => item.startOffset === offset);
   if (!block) return;
   await vscode.env.clipboard.writeText(noteToMarkdown(block));
-  vscode.window.setStatusBarMessage('CodeNote copied', 1600);
+  vscode.window.setStatusBarMessage('.cnote copied', 1500);
 }
 
 async function exportFileNotes(document: vscode.TextDocument): Promise<void> {
   const blocks = parseNoteBlocks(document);
-  if (!blocks.length) return void vscode.window.showInformationMessage('No CodeNote blocks to export.');
-  const body = `# ${path.basename(document.fileName)} — CodeNote\n\n${blocks.map(noteToMarkdown).join('\n\n---\n\n')}\n`;
+  if (!blocks.length) return void vscode.window.showInformationMessage('No .cnote blocks to export.');
   const target = await vscode.window.showSaveDialog({
     defaultUri: vscode.Uri.file(path.join(path.dirname(document.fileName), `${path.basename(document.fileName, path.extname(document.fileName))}.notes.md`)),
     filters: { Markdown: ['md'] }
   });
   if (!target) return;
+  const body = `# ${path.basename(document.fileName)} — .cnote\n\n${blocks.map(noteToMarkdown).join('\n\n---\n\n')}\n`;
   await vscode.workspace.fs.writeFile(target, Buffer.from(body, 'utf8'));
-  void vscode.window.showInformationMessage(`Exported ${blocks.length} notes.`);
 }
 
 async function exportWorkspaceNotes(notes: readonly IndexedNote[]): Promise<void> {
   if (!notes.length) return void vscode.window.showInformationMessage('No workspace notes to export.');
   const grouped = new Map<string, IndexedNote[]>();
-  for (const note of notes) grouped.set(note.relativePath, [...(grouped.get(note.relativePath) || []), note]);
-  const sections = [...grouped.entries()]
-    .map(([file, items]) => `# ${file}\n\n${items.map(item => noteToMarkdown(item.block)).join('\n\n---\n\n')}`)
-    .join('\n\n');
-  const folder = vscode.workspace.workspaceFolders?.[0]?.uri;
-  const defaultUri = folder ? vscode.Uri.joinPath(folder, 'CodeNote-Workspace-Notes.md') : undefined;
-  const target = await vscode.window.showSaveDialog({ defaultUri, filters: { Markdown: ['md'] } });
-  if (!target) return;
-  await vscode.workspace.fs.writeFile(target, Buffer.from(`# CodeNote Workspace Notes\n\n${sections}\n`, 'utf8'));
-  void vscode.window.showInformationMessage(`Exported ${notes.length} workspace notes.`);
+  for (const note of notes) grouped.set(note.relativePath, [...(grouped.get(note.relativePath) ?? []), note]);
+  const body = [...grouped.entries()].map(([file, items]) => `# ${file}\n\n${items.map(x => noteToMarkdown(x.block)).join('\n\n---\n\n')}`).join('\n\n');
+  const root = vscode.workspace.workspaceFolders?.[0]?.uri;
+  const target = await vscode.window.showSaveDialog({
+    defaultUri: root ? vscode.Uri.joinPath(root, 'cnote-workspace-notes.md') : undefined,
+    filters: { Markdown: ['md'] }
+  });
+  if (target) await vscode.workspace.fs.writeFile(target, Buffer.from(`# .cnote Workspace Notes\n\n${body}\n`, 'utf8'));
 }
 
 function noteToMarkdown(block: NoteBlock): string {
   const tags = block.metadata.tags.length ? `\n\nTags: ${block.metadata.tags.map(tag => `#${tag}`).join(' ')}` : '';
-  return `## ${block.title}\n\n> ${block.kind.toUpperCase()} · line ${block.range.start.line + 1}${block.metadata.difficulty ? ` · ${block.metadata.difficulty}` : ''}${tags}\n\n${block.content || block.body}`;
+  return `## ${block.title}\n\n> ${block.kind.toUpperCase()} · line ${block.range.start.line + 1}${tags}\n\n${block.content || block.body}`;
 }
 
 function activeSupportedDocument(): vscode.TextDocument | undefined {
-  const document = vscode.window.activeTextEditor?.document;
-  if (!document) {
+  const doc = vscode.window.activeTextEditor?.document;
+  if (!doc) {
     vscode.window.showErrorMessage('Open a source file first.');
-    return;
+    return undefined;
   }
-  if (!isSupportedLanguage(document.languageId)) {
-    vscode.window.showErrorMessage(`CodeNote does not support ${document.languageId} yet.`);
-    return;
+  if (!isSupportedLanguage(doc.languageId)) {
+    unsupported(doc.languageId);
+    return undefined;
   }
-  return document;
-}
-
-async function openSupportedDocument(uri: vscode.Uri): Promise<vscode.TextDocument | undefined> {
-  const doc = await vscode.workspace.openTextDocument(uri);
-  if (!isSupportedLanguage(doc.languageId)) return;
   return doc;
 }
 
@@ -381,6 +316,6 @@ function updateStatus(editor: vscode.TextEditor | undefined, status: vscode.Stat
   const count = parseNoteBlocks(editor.document).length;
   const due = index.all().filter(note => review.isDue(note.uri, note.block)).length;
   status.text = `$(notebook) ${count}${due ? ` · $(history) ${due}` : ''}`;
-  status.tooltip = `CodeNote · ${count} note${count === 1 ? '' : 's'} in this file${due ? ` · ${due} review item${due === 1 ? '' : 's'} due` : ''}`;
+  status.tooltip = `.cnote · ${count} note${count === 1 ? '' : 's'}${due ? ` · ${due} due` : ''}`;
   status.show();
 }
