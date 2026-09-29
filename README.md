@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><b>⬇ grab .cnote 6.2.0</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.1.vsix"><b>⬇ grab .cnote 6.2.1</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><b>👇 Download .cnote 6.2.0 in one click ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.1.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.1.vsix"><b>👇 Download .cnote 6.2.1 in one click ⚡</b></a><br>
   <sub>VS Code → Extensions → … → Install from VSIX…</sub>
 </p>
 
@@ -39,6 +39,10 @@ Your `.cpp` stays `.cpp`. Your `.py` stays `.py`. Git, compilers, IntelliSense, 
 
 Actual extension captures. [Exact same sample](sample/website-demo.cpp). **Same physical line count in both states.** The opener and closer become configurable boundary markers, so your breakpoints keep their place.
 
+### selection behaves like selection again
+
+V6.2.1 fixes multi-note drag selection. If your selection crosses several visual `.cnote` blocks, **every touched block temporarily reveals its raw source**, so the highlighted range is selectable/copyable as normal editor text. Release the selection or move away and visual mode comes back automatically.
+
 ## okay, what’s in the box? 👀
 
 | Your situation | .cnote’s move |
@@ -54,7 +58,7 @@ Actual extension captures. [Exact same sample](sample/website-demo.cpp). **Same 
 
 ### 8 note types that actually look different
 
-The Insert Note menu now stays focused. Three overlapping choices are no longer offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
+The Insert Note menu stays focused. Three overlapping choices are not offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
 
 | Type | Visual cue | Best for |
 | --- | --- | --- |
@@ -85,7 +89,7 @@ answer: `9`. Zero-based indexing, bestie.
 */
 ```
 
-The opening boundary also carries the note's semantic glyph, so a Definition, Warning, Quiz, Tip, Example and Todo no longer look like the same block with different words. The closing boundary still preserves the physical source line. Headings, `**bold**`, `*italic*`, inline code, bullets, checkboxes, and `> quotes` continue to work.
+The opening boundary carries the note's semantic glyph, so a Definition, Warning, Quiz, Tip, Example and Todo do not look like the same block with different words. The closing boundary still preserves the physical source line. Headings, `**bold**`, `*italic*`, inline code, bullets, checkboxes, and `> quotes` continue to work.
 
 ### academic comeback mode 🧠
 
@@ -99,7 +103,7 @@ Read in order. Filter the noise. Reveal the answer. Grade your recall. Jump back
 
 **Aurora · Midnight · Sunset · Forest · Paper · Minimal · Ocean · Lavender**
 
-V6.2 makes Snap predictable: **select code first and Snap captures only that selection; leave nothing selected and it captures the code currently visible in the editor.** The live preview and all eight template choices are rendered immediately, while visual `.cnote` notes stay visual instead of falling back to raw comment syntax.
+Select code first and Snap captures only that selection; leave nothing selected and it captures the code currently visible in the editor. The live preview and all eight template choices are rendered immediately, while visual `.cnote` notes stay visual instead of falling back to raw comment syntax.
 
 Set width, spacing, font size, line numbers, window dots, and branding. Save a 2× PNG. Your choices stick around between sessions.
 
@@ -111,10 +115,9 @@ Set width, spacing, font size, line numbers, window dots, and branding. Save a 2
 | --- | --- | --- |
 | Insert Note | `Ctrl + Shift + F6` | `Cmd + Shift + F6` |
 | Open Notebook | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
-| Run Current File | `Ctrl + Shift + F8` | `Cmd + Shift + F8` |
 | Snap Code | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
 
-More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. All 15 commands are in the VS Code Command Palette; [search the command list here](https://gurtejhundal.github.io/.cnote/#shortcuts).
+More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. Commands are also available in the VS Code Command Palette.
 
 “Explain Selected Code” inserts a note template **for you to fill in**. It does not generate an AI explanation.
 
@@ -126,7 +129,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.2.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix).
+1. [Download **codenote-6.2.1.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.1.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 

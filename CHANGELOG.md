@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.2.1
+
+- Fixed multi-note text selection in inline visual mode: every `.cnote` block touched by the current selection now temporarily returns to raw source, so drag-selecting across several notes behaves like normal editor text selection instead of only exposing one block.
+- Kept ordinary single-caret editing behavior unchanged: enter one note to edit its raw source, leave it to return to visual mode.
+- Replaced the extension icon with the acid-lime `< pencil >` coding mark requested for the `.cnote` brand.
+- Updated the release workflow so VSIX filenames come from `package.json` automatically instead of being hard-coded per release.
+
 ## 6.2.0
 
 - Fixed Snap Studio so the live preview is rendered server-side and appears immediately instead of depending on fragile webview startup JavaScript.
