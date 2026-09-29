@@ -56,7 +56,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main
-          git add downloads/codenote-6.0.0.vsix
+          git add -f downloads/codenote-6.0.0.vsix
           if git diff --cached --quiet; then
             echo "VSIX unchanged"
           else
