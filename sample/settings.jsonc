@@ -1,0 +1,8 @@
+{
+  // @note
+  // # JSONC supports comments
+  //
+  // Plain JSON does not, so use JSONC for CodeNote blocks.
+  // @end
+  "enabled": true
+}
