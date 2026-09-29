@@ -1,5 +1,16 @@
 # Changelog
 
+## 6.2.0
+
+- Fixed Snap Studio so the live preview is rendered server-side and appears immediately instead of depending on fragile webview startup JavaScript.
+- Restored all eight visual Snap templates in a persistent, always-visible template strip.
+- Snap now captures only the selected code when a selection exists.
+- With no selection, Snap captures the code currently visible in the editor.
+- Visual `.cnote` blocks stay visual inside Snap instead of falling back to raw Markdown comment syntax.
+- Kept Save PNG pinned at the top-right and preserved remembered Snap preferences.
+- Rebuilt the extension icon around a clean `< pen >` mark using static navy, cyan, purple and magenta brand colors with no glow.
+- Updated the Activity Bar icon to match the new code-pencil identity.
+
 ## 6.1.1
 
 - Added a dedicated 256×256 `.cnote` extension icon for the VS Code Extensions view and Marketplace.
