@@ -1,12 +1,18 @@
 # Changelog
 
+## 4.1.0
+
+- Replaced manual Visual Mode with automatic Live Visual Notes.
+- Raw syntax appears while the caret is inside a note and automatically renders visually when the caret returns to code.
+- Removed whole-block background highlighting.
+- Removed per-note `Study | Copy note` CodeLens controls.
+- Visually collapses Markdown markers, comment fences and line-comment prefixes in completed notes.
+- Uses typography for headings, bold text, inline code, labels and note types.
+- Compact note templates remove unnecessary metadata prompts and blank lines.
+- Keeps Study Mode and PDF export.
+- No language-specific actions are injected into the inline note area.
+
 ## 4.0.0
 
-- Added inline Visual Mode in the normal VS Code editor.
-- Added `Ctrl+Shift+F9` to toggle Visual Mode.
-- Added Markdown-like styling for headings, bold, italic, inline code, labels and CodeNote metadata.
+- Added inline Visual Mode.
 - Added Study Mode PDF export.
-- Added `CodeNote: Export Study PDF` command.
-- Retained native source files and normal language tooling.
-- Retained workspace indexing, tags, search, quizzes, spaced review, CodeLens, folding, Markdown export and custom runners.
-- Uses Windows-safe `Ctrl+Shift+F6/F7/F8/F9` shortcuts.
