@@ -5,16 +5,16 @@
 <p align="center"><b>Write code like notes — without leaving your real source file.</b></p>
 
 <p align="center">
-  Inline visual Markdown · Study Mode · Review · PDF export · Snap Studio · Workspace notes
+  Inline visual Markdown · Notebook · Review · PDF export · Snap Studio · Workspace notes
 </p>
 
 <p align="center">
-  <a href="downloads/codenote-6.0.0.vsix"><b>⬇ Download .cnote 6.0.0 for VS Code</b></a>
+  <a href="downloads/codenote-6.1.0.vsix"><b>⬇ Download .cnote 6.1.0 for VS Code</b></a>
 </p>
 
 ## Support the project 🎮
 
-.cnote is free and open source. If it saves you time, helps you study, or makes your code notes less ugly, you can support the project.
+.cnote is free and open source. If it saves you time, helps you learn, or makes your code notes less ugly, you can support the project.
 
 <p align="center">
   <img src="media/readme/upi-qr.svg" alt="UPI QR for Gurtejbir Singh" width="330" />
@@ -39,23 +39,31 @@ Your file stays `.cpp`, `.py`, `.java`, `.js`, `.ts`, `.go`, `.rs`, and so on. C
 
 V6 keeps the **same physical line count** in both states. The comment opener and closer become configurable boundary markers instead of disappearing, so diagnostics and breakpoints do not feel shifted.
 
-## V6 editor toolbar
+## V6.1 editor workflow
 
-You no longer have to memorize shortcuts. When a supported source file is active, .cnote adds quick actions to the editor title area:
+The editor title is intentionally small now. `.cnote` only adds three quick actions:
 
 - **Note** — insert a note
-- **Study** — open Study Mode
 - **Snap** — open Snap Studio
-- **Run** — run the current source file
-- **Settings** — open the .cnote settings panel
+- **.cnote** — open the compact action menu
 
-Keyboard shortcuts still exist for people who prefer them.
+The `.cnote` menu contains:
+
+- **Notebook** — read code + notes from the current file
+- **Review** — open due quizzes and checkpoints
+- **Find Notes** — search the workspace
+- **Export PDF**
+- **Workspace Stats**
+- **Settings**
+
+`.cnote` no longer adds a Run button to the editor title, so it does not compete with the Run action from C/C++, Python or other language extensions.
+
+Keyboard shortcuts remain optional:
 
 | Action | Windows/Linux | macOS |
 |---|---|---|
 | Insert note | `Ctrl + Shift + F6` | `Cmd + Shift + F6` |
-| Study Mode | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
-| Run current file | `Ctrl + Shift + F8` | `Cmd + Shift + F8` |
+| Notebook | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
 | Snap Studio | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
 
 ## Markdown that works inline
@@ -110,7 +118,7 @@ answer: 9
 
 ## Same-line-count inline mode
 
-V6 fixes a debugging annoyance from earlier builds. This source:
+This source:
 
 ```text
 /* @note
@@ -147,17 +155,20 @@ Select code, or leave nothing selected to capture the visible editor, then open 
 
 <p align="center"><img src="media/readme/snap-studio.svg" alt=".cnote Snap Studio" width="860" /></p>
 
-V6 improvements:
+V6.1 changes Snap into a preview-first workflow:
 
-- Snap now captures **visual CodeNote output**, not raw `/* @note ... */` Markdown syntax.
-- **Save PNG** is pinned at the top.
-- Template, width, spacing, font size, line numbers, window dots and branding are remembered between sessions.
-- 8 built-in templates: Aurora, Midnight, Sunset, Forest, Paper, Minimal, Ocean and Lavender.
-- 2× PNG export.
+- the code preview is visible immediately when Snap opens
+- visual `.cnote` notes are rendered in the preview instead of raw `/* @note ... */` syntax
+- **Save PNG** stays pinned at the top-right
+- templates are a compact horizontal strip
+- advanced controls stay out of the way until needed
+- template, width, spacing, font size, line numbers, window dots and branding are remembered between sessions
+- 8 built-in templates: Aurora, Midnight, Sunset, Forest, Paper, Minimal, Ocean and Lavender
+- 2× PNG export
 
-## Study Mode
+## Notebook
 
-Study Mode turns the annotated file into a reading/revision view and keeps code + notes in source order.
+Notebook is the reading/navigation view for annotated files. It keeps normal code and visual notes in source order without positioning `.cnote` as a student-only feature.
 
 Features include:
 
@@ -169,9 +180,16 @@ Features include:
 - jump back to exact source location
 - workspace note search and tags
 
+The `.cnote` Activity Bar also acts as the primary notebook index:
+
+- **This File**
+- **Workspace**
+- **Review**
+- **Tags**
+
 ## Settings panel
 
-Open the **gear icon in the editor toolbar** or run `CodeNote: Settings`.
+Open **.cnote → Settings** from the editor toolbar menu, use the Notebook sidebar gear, or run `CodeNote: Settings`.
 
 You can change:
 
@@ -196,7 +214,7 @@ Plain JSON is intentionally not supported because JSON has no legal comments. Us
 
 ## Install
 
-1. [Download `codenote-6.0.0.vsix`](downloads/codenote-6.0.0.vsix).
+1. [Download `codenote-6.1.0.vsix`](downloads/codenote-6.1.0.vsix).
 2. Open VS Code.
 3. Open **Extensions**.
 4. Click `…` → **Install from VSIX…**.
