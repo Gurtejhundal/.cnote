@@ -1,29 +1,30 @@
 {
   "name": "codenote",
   "displayName": ".cnote",
-  "description": "Write visual Markdown notes inside native source files, study, review, export PDF, and create aesthetic code snapshots.",
-  "version": "6.0.0",
+  "description": "Write visual Markdown notes inside native source files, browse them in Notebook, review, export PDF, and create aesthetic code snapshots.",
+  "version": "6.1.0",
   "publisher": "local-dev",
   "license": "MIT",
   "repository": {"type": "git", "url": "https://github.com/Gurtejhundal/.cnote.git"},
   "homepage": "https://github.com/Gurtejhundal/.cnote",
   "engines": {"vscode": "^1.90.0"},
   "categories": ["Programming Languages", "Education", "Other"],
-  "keywords": ["notes","study","literate programming","dsa","learning","markdown","code","flashcards","spaced repetition","inline notes","visual notes","screenshot","snapshot","png","code image","carbon"],
+  "keywords": ["notes","notebook","study","literate programming","dsa","learning","markdown","code","flashcards","spaced repetition","inline notes","visual notes","screenshot","snapshot","png","code image","carbon"],
   "activationEvents": ["onStartupFinished","onView:codenote.notes"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {"command":"codenote.insertNote","title":"CodeNote: Insert Note","icon":"$(edit)"},
       {"command":"codenote.annotateSelection","title":"CodeNote: Explain Selected Code"},
-      {"command":"codenote.openStudyPreview","title":"CodeNote: Open Study Mode","icon":"$(book-open)"},
+      {"command":"codenote.openStudyPreview","title":"CodeNote: Open Notebook","icon":"$(book-open)"},
+      {"command":"codenote.openQuickMenu","title":"CodeNote: .cnote Menu","icon":"$(notebook)"},
       {"command":"codenote.runFile","title":"CodeNote: Run Current File","icon":"$(play)"},
       {"command":"codenote.openSnapStudio","title":"CodeNote: Snap Code","icon":"$(device-camera)"},
       {"command":"codenote.openSettings","title":"CodeNote: Settings","icon":"$(settings-gear)"},
       {"command":"codenote.exportNotes","title":"CodeNote: Export Current File Notes"},
-      {"command":"codenote.exportStudyPdf","title":"CodeNote: Export Study PDF","icon":"$(file-pdf)"},
+      {"command":"codenote.exportStudyPdf","title":"CodeNote: Export Notebook PDF","icon":"$(file-pdf)"},
       {"command":"codenote.exportWorkspaceNotes","title":"CodeNote: Export Workspace Notes"},
-      {"command":"codenote.searchWorkspace","title":"CodeNote: Search Workspace Notes"},
+      {"command":"codenote.searchWorkspace","title":"CodeNote: Find Notes"},
       {"command":"codenote.startReview","title":"CodeNote: Review Due Quizzes"},
       {"command":"codenote.showStats","title":"CodeNote: Workspace Stats"},
       {"command":"codenote.rescanWorkspace","title":"CodeNote: Reindex Workspace"},
@@ -32,20 +33,16 @@
     "keybindings": [
       {"command":"codenote.insertNote","key":"ctrl+shift+f6","mac":"cmd+shift+f6","when":"editorTextFocus && codenote.supportedEditor"},
       {"command":"codenote.openStudyPreview","key":"ctrl+shift+f7","mac":"cmd+shift+f7","when":"editorTextFocus && codenote.supportedEditor"},
-      {"command":"codenote.runFile","key":"ctrl+shift+f8","mac":"cmd+shift+f8","when":"editorTextFocus"},
       {"command":"codenote.openSnapStudio","key":"ctrl+shift+f10","mac":"cmd+shift+f10","when":"editorTextFocus"}
     ],
-    "viewsContainers": {"activitybar":[{"id":"codenote","title":"CodeNote","icon":"media/codenote.svg"}]},
+    "viewsContainers": {"activitybar":[{"id":"codenote","title":".cnote","icon":"media/codenote.svg"}]},
     "views": {"codenote":[{"id":"codenote.notes","name":"Notebook"}]},
-    "viewsWelcome": [{"view":"codenote.notes","contents":"Keep notes inside the source file.\n[Insert Note](command:codenote.insertNote)\n[Search Workspace](command:codenote.searchWorkspace)\n[Review Due Quizzes](command:codenote.startReview)"}],
+    "viewsWelcome": [{"view":"codenote.notes","contents":"Notes that live with your code.\n[Insert Note](command:codenote.insertNote)\n[Find Notes](command:codenote.searchWorkspace)\n[Review Due](command:codenote.startReview)"}],
     "menus": {
       "view/title": [
         {"command":"codenote.searchWorkspace","when":"view == codenote.notes","group":"navigation@1"},
         {"command":"codenote.startReview","when":"view == codenote.notes","group":"navigation@2"},
-        {"command":"codenote.openStudyPreview","when":"view == codenote.notes","group":"navigation@3"},
-        {"command":"codenote.rescanWorkspace","when":"view == codenote.notes","group":"navigation@4"},
-        {"command":"codenote.exportStudyPdf","when":"view == codenote.notes","group":"navigation@5"},
-        {"command":"codenote.openSnapStudio","when":"view == codenote.notes","group":"navigation@6"}
+        {"command":"codenote.openSettings","when":"view == codenote.notes","group":"navigation@3"}
       ],
       "editor/context": [
         {"command":"codenote.insertNote","group":"navigation@50","when":"codenote.supportedEditor"},
@@ -55,28 +52,26 @@
       ],
       "editor/title": [
         {"command":"codenote.insertNote","when":"codenote.supportedEditor","group":"navigation@1"},
-        {"command":"codenote.openStudyPreview","when":"codenote.supportedEditor","group":"navigation@2"},
-        {"command":"codenote.openSnapStudio","when":"codenote.supportedEditor","group":"navigation@3"},
-        {"command":"codenote.runFile","when":"codenote.supportedEditor","group":"navigation@4"},
-        {"command":"codenote.openSettings","when":"codenote.supportedEditor","group":"navigation@5"}
+        {"command":"codenote.openSnapStudio","when":"codenote.supportedEditor","group":"navigation@2"},
+        {"command":"codenote.openQuickMenu","when":"codenote.supportedEditor","group":"navigation@3"}
       ]
     },
     "configuration": {
-      "title":"CodeNote",
+      "title":".cnote",
       "properties": {
-        "codenote.enabled":{"type":"boolean","default":true,"description":"Enable CodeNote parsing and editor features."},
-        "codenote.liveVisualMode":{"type":"boolean","default":true,"description":"Render completed CodeNote blocks visually whenever the caret is outside them. Enter a note to edit the real source."},
+        "codenote.enabled":{"type":"boolean","default":true,"description":"Enable .cnote parsing and editor features."},
+        "codenote.liveVisualMode":{"type":"boolean","default":true,"description":"Render completed .cnote blocks visually whenever the caret is outside them. Enter a note to edit the real source."},
         "codenote.inlineKindHints":{"type":"boolean","default":false,"description":"Show small semantic labels such as Warning or Quiz in automatic inline visual notes."},
         "codenote.inlineShowTags":{"type":"boolean","default":false,"description":"Show note tags in automatic inline visual notes."},
         "codenote.inlineRenderDelay":{"type":"number","default":18,"minimum":0,"maximum":250,"description":"Debounce delay in milliseconds for automatic inline rendering after caret movement."},
-        "codenote.workspaceIndexMaxFiles":{"type":"number","default":750,"minimum":25,"maximum":10000,"description":"Maximum source files CodeNote scans when building the workspace notebook index."},
-        "codenote.cppStandard":{"type":"string","enum":["c++17","c++20","c++23"],"default":"c++20","description":"C++ standard used by CodeNote: Run Current File."},
+        "codenote.workspaceIndexMaxFiles":{"type":"number","default":750,"minimum":25,"maximum":10000,"description":"Maximum source files .cnote scans when building the workspace notebook index."},
+        "codenote.cppStandard":{"type":"string","enum":["c++17","c++20","c++23"],"default":"c++20","description":"C++ standard used by the optional Run Current File command."},
         "codenote.runCommands":{"type":"object","default":{},"description":"Optional custom run commands keyed by VS Code language id.","additionalProperties":{"type":"string"}},
-        "codenote.snap.defaultTemplate":{"type":"string","enum":["aurora","midnight","sunset","forest","paper","minimal","ocean","lavender"],"default":"aurora","description":"Default visual template for CodeNote Snap Studio."},
+        "codenote.snap.defaultTemplate":{"type":"string","enum":["aurora","midnight","sunset","forest","paper","minimal","ocean","lavender"],"default":"aurora","description":"Default visual template for .cnote Snap Studio."},
         "codenote.snap.lineNumbers":{"type":"boolean","default":true,"description":"Show line numbers by default in code snapshots."},
-        "codenote.snap.branding":{"type":"boolean","default":false,"description":"Show a small CodeNote mark on exported snapshots."},
+        "codenote.snap.branding":{"type":"boolean","default":false,"description":"Show a small .cnote mark on exported snapshots."},
         "codenote.snap.maxLines":{"type":"number","default":160,"minimum":10,"maximum":400,"description":"Maximum lines captured by Snap Studio when no selection is active."},
-        "codenote.inlineBoundaryStyle":{"type":"string","enum":["symbol","line","none"],"default":"symbol","description":"Visual marker used on the source comment opener and closer rows so inline visual mode preserves the exact physical line count."},
+        "codenote.inlineBoundaryStyle":{"type":"string","enum":["symbol","line","none"],"default":"symbol","description":"Visual marker used on source comment opener and closer rows so inline visual mode preserves the exact physical line count."},
         "codenote.inlineBoundarySymbol":{"type":"string","default":"◆","maxLength":12,"description":"Custom symbol shown at the start and end of an inline visual note when boundary style is Symbol."},
         "codenote.inlineBoundaryLabel":{"type":"boolean","default":false,"description":"Show the note type beside the opening inline boundary marker."}
       }
