@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="downloads/codenote-6.1.0.vsix"><b>⬇ Download .cnote 6.1.0 for VS Code</b></a>
+  <a href="downloads/codenote-6.1.1.vsix"><b>⬇ Download .cnote 6.1.1 for VS Code</b></a>
 </p>
 
 ## Support the project 🎮
@@ -206,6 +206,12 @@ You can change:
 
 Settings are stored in VS Code user settings. Snap Studio's live design choices are also remembered automatically.
 
+## Branding
+
+V6.1.1 adds the dedicated `.cnote` app icon used by VS Code's Extensions view and Marketplace package. Release builds generate and package the PNG automatically so local installs and published builds use the same identity.
+
+Publisher metadata now uses `gurtejhundal` instead of the temporary `local-dev` identifier.
+
 ## Language support
 
 .cnote uses native comment syntax for supported languages. C/C++/Java/JavaScript/TypeScript/Go/Rust use block comments, Python/Ruby/Shell/YAML use line-comment blocks, HTML/XML use HTML comments, and many more VS Code language IDs are supported.
@@ -214,7 +220,7 @@ Plain JSON is intentionally not supported because JSON has no legal comments. Us
 
 ## Install
 
-1. [Download `codenote-6.1.0.vsix`](downloads/codenote-6.1.0.vsix).
+1. [Download `codenote-6.1.1.vsix`](downloads/codenote-6.1.1.vsix).
 2. Open VS Code.
 3. Open **Extensions**.
 4. Click `…` → **Install from VSIX…**.
@@ -226,6 +232,7 @@ Plain JSON is intentionally not supported because JSON has no legal comments. Us
 src/        TypeScript source
 out/        compiled extension
 media/      icon and README assets
+scripts/    deterministic release asset generators
 sample/     example annotated source files
 ```
 
