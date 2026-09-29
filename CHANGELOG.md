@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.2.2
+- Fix inline visual note boundaries so @note headings do not show duplicate sparkle markers.
+- Align Snap Studio preview sizing with the PNG export layout.
 ## 6.2.1
 
 - Fixed multi-note text selection in inline visual mode: every `.cnote` block touched by the current selection now temporarily returns to raw source, so drag-selecting across several notes behaves like normal editor text selection instead of only exposing one block.

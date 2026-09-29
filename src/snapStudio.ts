@@ -144,13 +144,14 @@ body{overflow:auto}
 .brand{display:flex;align-items:center;gap:9px;min-width:0}.brand b{font-size:14px}.brand span{font-size:11px;opacity:.62;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .actions{display:flex;gap:8px}.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--vscode-button-background);color:var(--vscode-button-foreground);font-weight:700;cursor:pointer}.btn.secondary{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground)}
 .stage{padding:22px 18px 18px;display:flex;justify-content:center;overflow:auto;min-height:350px}
-.shot{width:min(100%,980px);padding:42px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:20px}
+.preview-wrap{position:relative;flex:0 0 auto}
+.shot{width:1320px;padding:60px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:20px;transform-origin:top center}
 .window{background:var(--card);border-radius:15px;overflow:hidden;box-shadow:0 18px 40px #0007}
-.window-head{height:62px;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid #ffffff10}
-.dots{display:flex;gap:8px;margin-right:18px}.dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
-.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:3px}
-.code{padding:24px 22px 28px;overflow:auto;font-family:Consolas,"Liberation Mono",monospace;font-size:15px;line-height:1.62}
-.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.62em}.ln{width:44px;padding-right:14px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.window-head{height:84px;display:flex;align-items:center;padding:0 30px;border-bottom:1px solid #ffffff10}
+.dots{display:flex;gap:9px;margin-right:24px}.dot{width:12px;height:12px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:5px}
+.code{padding:34px 38px 46px;overflow:auto;font-family:Consolas,"Liberation Mono",monospace;font-size:21px;line-height:1.55}
+.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.55em}.ln{width:56px;padding-right:20px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
 .code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.3em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.16em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.05em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
 .hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
 .brandmark{display:none;padding:0 22px 16px;text-align:right;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
@@ -170,8 +171,8 @@ details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-
   <div class="actions"><button class="btn secondary" id="copy" type="button">Copy source</button><button class="btn" id="save" type="button">Save PNG</button></div>
 </div>
 
-<div class="stage">
-  <div class="shot" id="shot">
+<div class="stage" id="stage">
+  <div class="preview-wrap" id="previewWrap"><div class="shot" id="shot">
     <div class="window" id="window">
       <div class="window-head">
         <div class="dots" id="dotsWrap"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i></div>
@@ -180,7 +181,7 @@ details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-
       <div class="code" id="code">${rows || '<div class="empty">Nothing to capture.</div>'}</div>
       <div class="brandmark">.cnote</div>
     </div>
-  </div>
+  </div></div>
 </div>
 
 <div class="controls">
@@ -217,6 +218,8 @@ const themes = ${JSON.stringify(THEMES)};
 let s = Object.assign({}, D.initial);
 
 const byId = (id) => document.getElementById(id);
+const stage = byId('stage');
+const previewWrap = byId('previewWrap');
 const shot = byId('shot');
 const win = byId('window');
 const title = byId('title');
@@ -255,10 +258,13 @@ function applyLayout() {
   s.windowDots = !!dots.checked;
   s.branding = !!brand.checked;
 
-  const displayPad = Math.max(20, Math.round(s.padding * 0.7));
-  shot.style.padding = displayPad + 'px';
-  shot.style.maxWidth = Math.min(980, Math.max(560, s.width * 0.74)) + 'px';
-  document.getElementById('code').style.fontSize = Math.max(12, Math.round(s.fontSize * 0.72)) + 'px';
+  shot.style.width = s.width + 'px';
+  shot.style.padding = s.padding + 'px';
+  document.getElementById('code').style.fontSize = s.fontSize + 'px';
+  const previewScale = Math.min(1, Math.max(0.45, (stage.clientWidth - 24) / s.width));
+  shot.style.transform = 'scale(' + previewScale + ')';
+  previewWrap.style.width = Math.round(s.width * previewScale) + 'px';
+  previewWrap.style.height = Math.round(shot.getBoundingClientRect().height) + 'px';
   win.classList.toggle('hide-lines', !s.lineNumbers);
   win.classList.toggle('hide-dots', !s.windowDots);
   win.classList.toggle('show-brand', s.branding);
@@ -286,7 +292,8 @@ document.querySelectorAll('.theme').forEach((node) => {
 
 [padding, width, nums, dots, brand].forEach((node) => node.addEventListener('change', update));
 font.addEventListener('input', update);
-title.addEventListener('input', () => { previewTitle.textContent = title.value || D.filename; });
+title.addEventListener('input', () => { previewTitle.textContent = title.value || D.filename; applyLayout(); });
+window.addEventListener('resize', applyLayout);
 
 function exportPng() {
   const t = themes[s.theme] || themes.aurora;

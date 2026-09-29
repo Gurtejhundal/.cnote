@@ -158,10 +158,10 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
     let visual:VisualLine|undefined;
 
     if(lineNo===start){
-      const text=boundaryText(true,boundaryStyle,symbol,label?block.kind:undefined,block.kind);
+      const text=boundaryText(true,boundaryStyle,symbol,label?block.kind:undefined);
       if(text)visual={style:'boundary',text};
     } else if(lineNo===end){
-      const text=boundaryText(false,boundaryStyle,symbol,undefined,block.kind);
+      const text=boundaryText(false,boundaryStyle,symbol,undefined);
       if(text)visual={style:'boundary',text};
     } else {
       const raw=stripCommentPrefix(document.lineAt(lineNo).text,adapter?.comment);
@@ -172,26 +172,10 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
   }
 }
 
-function kindGlyph(kind:string):string{
-  return ({
-    paragraph:'¶',
-    note:'✦',
-    section:'§',
-    definition:'≡',
-    warning:'⚠',
-    complexity:'⏱',
-    quiz:'?',
-    checkpoint:'✓',
-    tip:'💡',
-    example:'↪',
-    todo:'☐'
-  } as Record<string,string>)[kind] || '•';
-}
-
-function boundaryText(start:boolean,style:string,symbol:string,label:string|undefined,kind:string):string{
+function boundaryText(start:boolean,style:string,symbol:string,label:string|undefined):string{
   if(style==='none')return '';
-  if(style==='line')return start?`╭─ ${kindGlyph(kind)}${label?` ${prettyKind(label)}`:''}`:'╰─';
-  return start?`${symbol} ${kindGlyph(kind)}${label?` ${prettyKind(label)}`:''}`:symbol;
+  if(style==='line')return start?`╭─${label?` ${prettyKind(label)}`:''}`:'╰─';
+  return start?`${symbol}${label?` ${prettyKind(label)}`:''}`:symbol;
 }
 
 function prettyKind(k:string):string{
