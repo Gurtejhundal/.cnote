@@ -14,6 +14,7 @@ import { SnapStudioManager } from './snapStudio';
 import { SettingsPanel } from './settingsPanel';
 
 type NotePick = vscode.QuickPickItem & { noteKind: NoteKind };
+type MenuPick = vscode.QuickPickItem & { command: string };
 
 export function activate(context: vscode.ExtensionContext): void {
   const index = new WorkspaceNoteIndex();
@@ -24,7 +25,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const settings = new SettingsPanel();
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 80);
   let refreshUi = (): void => {};
-  const study = new StudyPreviewManager(
+  const notebook = new StudyPreviewManager(
     runDocument,
     exportFileNotes,
     exportStudyPdf,
@@ -53,8 +54,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('codenote.annotateSelection', annotateSelection),
     vscode.commands.registerCommand('codenote.openStudyPreview', async () => {
       const doc = activeSupportedDocument();
-      if (doc) await study.open(doc);
+      if (doc) await notebook.open(doc);
     }),
+    vscode.commands.registerCommand('codenote.openQuickMenu', openQuickMenu),
     vscode.commands.registerCommand('codenote.exportStudyPdf', async () => {
       const doc = activeSupportedDocument();
       if (doc) await exportStudyPdf(doc);
@@ -72,7 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand('codenote.openStudyAt', async (uri: vscode.Uri, offset: number) => {
       const doc = await vscode.workspace.openTextDocument(uri);
-      if (isSupportedLanguage(doc.languageId)) await study.open(doc, offset);
+      if (isSupportedLanguage(doc.languageId)) await notebook.open(doc, offset);
     }),
     vscode.commands.registerCommand('codenote.revealBlock', revealBlock),
     vscode.commands.registerCommand('codenote.copyNote', copyNote),
@@ -85,7 +87,7 @@ export function activate(context: vscode.ExtensionContext): void {
       await exportWorkspaceNotes(index.all());
     }),
     vscode.commands.registerCommand('codenote.searchWorkspace', async () => searchWorkspace(index)),
-    vscode.commands.registerCommand('codenote.startReview', async () => startReview(index, review, study)),
+    vscode.commands.registerCommand('codenote.startReview', async () => startReview(index, review, notebook)),
     vscode.commands.registerCommand('codenote.showStats', async () => showStats(index, review)),
     vscode.commands.registerCommand('codenote.rescanWorkspace', async () => {
       await index.scan(true);
@@ -123,7 +125,7 @@ export function activate(context: vscode.ExtensionContext): void {
     visual,
     snap,
     settings,
-    study
+    notebook
   );
 
   refreshUi();
@@ -131,6 +133,22 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {}
+
+async function openQuickMenu(): Promise<void> {
+  const items: MenuPick[] = [
+    { label: '$(notebook) Notebook', description: 'Read notes and code from the current file', command: 'codenote.openStudyPreview' },
+    { label: '$(history) Review', description: 'Open quizzes and checkpoints that are due', command: 'codenote.startReview' },
+    { label: '$(search) Find notes', description: 'Search notes across the workspace', command: 'codenote.searchWorkspace' },
+    { label: '$(file-pdf) Export PDF', description: 'Export the current Notebook as PDF', command: 'codenote.exportStudyPdf' },
+    { label: '$(graph) Workspace stats', description: 'See note and review counts', command: 'codenote.showStats' },
+    { label: '$(settings-gear) Settings', description: 'Customize inline notes and Snap Studio', command: 'codenote.openSettings' }
+  ];
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: '.cnote · choose an action',
+    matchOnDescription: true
+  });
+  if (pick) await vscode.commands.executeCommand(pick.command);
+}
 
 async function insertNote(): Promise<void> {
   const editor = vscode.window.activeTextEditor;
@@ -227,7 +245,7 @@ async function searchWorkspace(index: WorkspaceNoteIndex): Promise<void> {
   if (pick) await revealBlock(pick.note.uri, pick.note.block.startOffset);
 }
 
-async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, study: StudyPreviewManager): Promise<void> {
+async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, notebook: StudyPreviewManager): Promise<void> {
   if (!index.count()) await index.scan(true);
   const due = index.all().filter(note => review.isDue(note.uri, note.block));
   if (!due.length) return void vscode.window.showInformationMessage('No quizzes are due.');
@@ -237,7 +255,7 @@ async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, study
   );
   if (!pick) return;
   const doc = await vscode.workspace.openTextDocument(pick.note.uri);
-  await study.open(doc, pick.note.block.startOffset);
+  await notebook.open(doc, pick.note.block.startOffset);
 }
 
 async function showStats(index: WorkspaceNoteIndex, review: ReviewStore): Promise<void> {
@@ -316,6 +334,6 @@ function updateStatus(editor: vscode.TextEditor | undefined, status: vscode.Stat
   const count = parseNoteBlocks(editor.document).length;
   const due = index.all().filter(note => review.isDue(note.uri, note.block)).length;
   status.text = `$(notebook) ${count}${due ? ` · $(history) ${due}` : ''}`;
-  status.tooltip = `.cnote · ${count} note${count === 1 ? '' : 's'}${due ? ` · ${due} due` : ''}`;
+  status.tooltip = `.cnote Notebook · ${count} note${count === 1 ? '' : 's'}${due ? ` · ${due} due` : ''}`;
   status.show();
 }
