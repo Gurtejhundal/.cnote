@@ -66,8 +66,8 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
   for(let lineNo=start;lineNo<=end;lineNo++){
     concealLine(document,lineNo,result);
     let visual:VisualLine|undefined;
-    if(lineNo===start){const text=boundaryText(true,boundaryStyle,symbol,label?block.kind:undefined);if(text)visual={style:'boundary',text};}
-    else if(lineNo===end){const text=boundaryText(false,boundaryStyle,symbol);if(text)visual={style:'boundary',text};}
+    if(lineNo===start){const text=boundaryText(true,boundaryStyle,symbol,block.kind,label);if(text)visual={style:'boundary',text};}
+    else if(lineNo===end){const text=boundaryText(false,boundaryStyle,symbol,block.kind,label);if(text)visual={style:'boundary',text};}
     else {
       const raw=stripCommentPrefix(document.lineAt(lineNo).text,adapter?.comment);
       visual=visualizePhysicalLine(raw,block.kind,kindHints,showTags,block);
@@ -76,10 +76,19 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
   }
 }
 
-function boundaryText(start:boolean,style:string,symbol:string,label?:string):string{
+function boundaryText(start:boolean,style:string,symbol:string,kind:string,showLabel:boolean):string{
   if(style==='none')return '';
-  if(style==='line')return start?`╭─${label?` ${prettyKind(label)}`:''}`:'╰─';
-  return start?`${symbol}${label?` ${prettyKind(label)}`:''}`:symbol;
+  if(!start)return style==='line'?'╰─':symbol;
+  const glyph=kindGlyph(kind);
+  const name=showLabel?` ${prettyKind(kind)}`:'';
+  if(style==='line')return`╭─ ${glyph}${name}`;
+  return`${symbol} ${glyph}${name}`;
+}
+function kindGlyph(kind:string):string{
+  return({
+    paragraph:'¶',note:'✦',section:'§',definition:'≡',warning:'⚠',complexity:'⏱',
+    quiz:'?',checkpoint:'?',tip:'💡',example:'↪',todo:'☐'
+  } as Record<string,string>)[kind]||'•';
 }
 function prettyKind(k:string):string{return k.replace(/(^|[-_])(\w)/g,(_m,_s,c:string)=>c.toUpperCase());}
 function stripCommentPrefix(text:string,comment:any):string{
@@ -103,11 +112,24 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
   const b=raw.match(/^\s*[-+*]\s+(.+)$/);if(b)return{style:'paragraph',text:`•  ${cleanInlineMarkdown(b[1])}`};
   const n=raw.match(/^\s*(\d+[.)])\s+(.+)$/);if(n)return{style:'paragraph',text:`${n[1]}  ${cleanInlineMarkdown(n[2])}`};
   if(/^([-*_])(?:\s*\1){2,}$/.test(trimmed))return{style:'separator',text:'────────────────────────'};
-  const l=raw.match(/^\s*(question|answer|time|space)\s*:\s*(.*)$/i);if(l){const name=l[1][0].toUpperCase()+l[1].slice(1).toLowerCase();return{style:l[1].toLowerCase()==='question'?'h3':'paragraph',text:`${name} · ${cleanInlineMarkdown(l[2])}`};}
-  if(showKind&&raw===block.content.split(/\r?\n/)[0])return{style:'secondary',text:prettyKind(kind)};
+  const semantic=raw.match(/^\s*(question|answer|time|space|meaning|risk|input|result)\s*:\s*(.*)$/i);
+  if(semantic){
+    const key=semantic[1].toLowerCase();
+    const text=cleanInlineMarkdown(semantic[2]);
+    const labels:Record<string,string>={question:'?  Question',answer:'↳  Answer',time:'⏱  Time',space:'▣  Space',meaning:'≡  Meaning',risk:'⚠  Risk',input:'→  Input',result:'↪  Result'};
+    const style:VisualStyle=key==='question'?'h3':key==='risk'?'warning':'secondary';
+    return{style,text:`${labels[key]||prettyKind(key)} · ${text}`};
+  }
+  if(showKind&&raw===block.content.split(/\r?\n/)[0])return{style:'secondary',text:`${kindGlyph(kind)} ${prettyKind(kind)}`};
   return{style:kind==='warning'?'warning':'paragraph',text:cleanInlineMarkdown(raw)};
 }
-function decorateHeading(kind:string,text:string):string{if(kind==='warning')return`⚠ ${text}`;if(kind==='tip')return`→ ${text}`;if(kind==='checkpoint')return`✓ ${text}`;return text;}
+function decorateHeading(kind:string,text:string):string{
+  const prefix=({
+    paragraph:'¶',note:'✦',section:'§',definition:'≡',warning:'⚠',complexity:'⏱',
+    quiz:'?',checkpoint:'?',tip:'💡',example:'↪',todo:'☐'
+  } as Record<string,string>)[kind];
+  return prefix?`${prefix} ${text}`:text;
+}
 function pushVisual(r:VisualRanges,line:VisualLine,o:vscode.DecorationOptions):void{(r as any)[line.style].push(o);}
 function concealLine(document:vscode.TextDocument,lineNo:number,result:VisualRanges):void{const line=document.lineAt(lineNo);if(!line.text.length)return;const s=Math.min(line.firstNonWhitespaceCharacterIndex,line.text.length);result.concealed.push(new vscode.Range(lineNo,s,lineNo,line.text.length));}
 function renderAtLine(document:vscode.TextDocument,lineNo:number,contentText:string):vscode.DecorationOptions{const line=document.lineAt(lineNo);const s=Math.min(line.firstNonWhitespaceCharacterIndex,line.text.length);return{range:new vscode.Range(lineNo,s,lineNo,line.text.length),hoverMessage:new vscode.MarkdownString('Click this note to edit its source.'),renderOptions:{before:{contentText}}};}

@@ -52,11 +52,27 @@ Actual extension captures. [Exact same sample](sample/website-demo.cpp). **Same 
 | “i just want to run this” | **Run Current File** using your installed runtime/compiler |
 | “my editor, my rules” | Visual mode, labels, tags, boundaries, render delay, and Snap defaults |
 
-### notes with range
+### 8 note types that actually look different
 
-`@paragraph` · `@note` · `@section` · `@definition` · `@warning` · `@complexity` · `@quiz` · `@checkpoint` · `@tip` · `@example` · `@todo`
+The Insert Note menu now stays focused. Three overlapping choices are no longer offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
+
+| Type | Visual cue | Best for |
+| --- | --- | --- |
+| `@note` | `✦` | General explanation or concept |
+| `@definition` | `≡` + `Meaning ·` | Exact meaning of a term |
+| `@warning` | `⚠` + warning colour | Mistakes, traps and edge cases |
+| `@complexity` | `⏱` + Time / Space labels | Complexity analysis |
+| `@quiz` | `? Question` + `↳ Answer` | Active recall |
+| `@tip` | `💡` + quote-style body | Rules, shortcuts and memory aids |
+| `@example` | `↪` + Input / Result labels | Worked examples |
+| `@todo` | `☐` / `✓` | Tasks and revision checklists |
 
 ```cpp
+/* @definition
+# Vector
+Meaning: A dynamic array that can resize itself.
+*/
+
 /* @complexity
 # Binary search
 Time: `O(log n)`
@@ -69,7 +85,7 @@ answer: `9`. Zero-based indexing, bestie.
 */
 ```
 
-Headings, `**bold**`, `*italic*`, inline code, bullets, checkboxes, and `> quotes` work in note content. Notebook renders rich formatting; inline mode cleans Markdown markers into readable lines.
+The opening boundary also carries the note's semantic glyph, so a Definition, Warning, Quiz, Tip, Example and Todo no longer look like the same block with different words. The closing boundary still preserves the physical source line. Headings, `**bold**`, `*italic*`, inline code, bullets, checkboxes, and `> quotes` continue to work.
 
 ### academic comeback mode 🧠
 

@@ -16,6 +16,24 @@ import { SettingsPanel } from './settingsPanel';
 type NotePick = vscode.QuickPickItem & { noteKind: NoteKind };
 type MenuPick = vscode.QuickPickItem & { command: string };
 
+// Keep the old parser kinds for backwards compatibility, but do not offer
+// overlapping kinds when users create new notes. Paragraph/section are just
+// Markdown structure and checkpoint duplicated quiz behaviour.
+const INSERT_NOTE_KINDS: readonly NoteKind[] = [
+  'note', 'definition', 'warning', 'complexity', 'quiz', 'tip', 'example', 'todo'
+];
+
+const NOTE_PICK_LABELS: Partial<Record<NoteKind, string>> = {
+  note: '✦ Note',
+  definition: '◆ Definition',
+  warning: '⚠ Warning',
+  complexity: '⏱ Complexity',
+  quiz: '? Quiz',
+  tip: '💡 Tip',
+  example: '↪ Example',
+  todo: '☐ Todo'
+};
+
 export function activate(context: vscode.ExtensionContext): void {
   const index = new WorkspaceNoteIndex();
   const review = new ReviewStore(context.workspaceState);
@@ -137,7 +155,7 @@ export function deactivate(): void {}
 async function openQuickMenu(): Promise<void> {
   const items: MenuPick[] = [
     { label: '$(notebook) Notebook', description: 'Read notes and code from the current file', command: 'codenote.openStudyPreview' },
-    { label: '$(history) Review', description: 'Open quizzes and checkpoints that are due', command: 'codenote.startReview' },
+    { label: '$(history) Review', description: 'Open review questions that are due', command: 'codenote.startReview' },
     { label: '$(search) Find notes', description: 'Search notes across the workspace', command: 'codenote.searchWorkspace' },
     { label: '$(file-pdf) Export PDF', description: 'Export the current Notebook as PDF', command: 'codenote.exportStudyPdf' },
     { label: '$(graph) Workspace stats', description: 'See note and review counts', command: 'codenote.showStats' },
@@ -181,24 +199,27 @@ async function annotateSelection(): Promise<void> {
 
 async function pickNoteKind(): Promise<NoteKind | undefined> {
   const details: Record<NoteKind, string> = {
-    paragraph: 'Plain prose between code',
-    note: 'Explanation or concept note',
-    section: 'Topic or chapter heading',
-    definition: 'Define a term or concept',
+    paragraph: 'Legacy plain prose block',
+    note: 'General explanation or concept note',
+    section: 'Legacy topic heading block',
+    definition: 'Exact meaning of a term or concept',
     warning: 'Mistake, edge case or trap',
     complexity: 'Time and space complexity',
-    quiz: 'Question and answer for review',
-    checkpoint: 'Active-recall checkpoint',
+    quiz: 'Question and answer for active recall',
+    checkpoint: 'Legacy review card; use Quiz for new notes',
     tip: 'Rule, shortcut or memory aid',
-    example: 'Worked example',
+    example: 'Worked example with a starting point and result',
     todo: 'Learning or coding task'
   };
-  const items: NotePick[] = NOTE_KINDS.map(noteKind => ({
-    label: noteKind[0].toUpperCase() + noteKind.slice(1),
+  const items: NotePick[] = INSERT_NOTE_KINDS.map(noteKind => ({
+    label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
     detail: details[noteKind],
     noteKind
   }));
-  const pick = await vscode.window.showQuickPick(items, { placeHolder: 'What do you want to write?' });
+  const pick = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Pick a note type · each one has its own visual language',
+    matchOnDetail: true
+  });
   return pick?.noteKind;
 }
 
@@ -207,13 +228,13 @@ function noteSnippet(languageId: string, kind: NoteKind): string | undefined {
     paragraph: ['${1:Write your note here.}'],
     note: ['# ${1:Topic}', '${2:Write your explanation here.}'],
     section: ['# ${1:Section}', '${2:What this section covers.}'],
-    definition: ['# ${1:Concept}', '${2:Write the definition here.}'],
-    warning: ['# ${1:Watch out}', '${2:Explain the mistake or edge case.}'],
+    definition: ['# ${1:Concept}', 'Meaning: ${2:Write the exact definition.}'],
+    warning: ['# ${1:Watch out}', 'Risk: ${2:Explain the mistake or edge case.}'],
     complexity: ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`'],
     quiz: ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}'],
     checkpoint: ['question: ${1:What should you recall?}', 'answer: ${2:Write the expected answer.}'],
-    tip: ['# ${1:Tip}', '${2:Write the rule or shortcut.}'],
-    example: ['# ${1:Example}', '${2:Explain the example.}'],
+    tip: ['# ${1:Tip}', '> ${2:Write the rule, shortcut, or memory aid.}'],
+    example: ['# ${1:Example}', 'Input: ${2:Show the starting point.}', 'Result: ${3:Explain what happens.}'],
     todo: ['- [ ] ${1:Write the task.}']
   };
   return wrapLines(languageId, kind, content[kind]);
