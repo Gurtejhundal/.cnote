@@ -8,6 +8,10 @@
   Inline visual Markdown · Study Mode · Review · PDF export · Snap Studio · Workspace notes
 </p>
 
+<p align="center">
+  <a href="downloads/codenote-6.0.0.vsix"><b>⬇ Download .cnote 6.0.0 for VS Code</b></a>
+</p>
+
 ## Support the project 🎮
 
 .cnote is free and open source. If it saves you time, helps you study, or makes your code notes less ugly, you can support the project.
@@ -192,7 +196,7 @@ Plain JSON is intentionally not supported because JSON has no legal comments. Us
 
 ## Install
 
-1. Download `codenote-6.0.0.vsix` from this repository.
+1. [Download `codenote-6.0.0.vsix`](downloads/codenote-6.0.0.vsix).
 2. Open VS Code.
 3. Open **Extensions**.
 4. Click `…` → **Install from VSIX…**.
