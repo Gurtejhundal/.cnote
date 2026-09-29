@@ -179,7 +179,7 @@ async function annotateSelection(): Promise<void> {
   const indent = lineObject.text.match(/^\s*/)?.[0] ?? '';
   const rawSnippet = wrapInteractiveLines(editor.document.languageId, 'note', [
     '# ${1:Explanation}',
-    '${2:Describe what this code does and why.}'
+    '${2:Describe what this code does and why.'}'
   ]);
   if (!rawSnippet) return;
   const indented = rawSnippet.split('\n').map(value => value ? `${indent}${value}` : value).join('\n') + '\n';
@@ -202,26 +202,48 @@ async function pickNoteKind(): Promise<NoteKind | undefined> {
   };
 
   const pick = await vscode.window.showQuickPick(
-    NOTE_KINDS.map(kind => ({ label: labels[kind].label, detail: labels[kind].detail, kind })),
+    NOTE_KINDS.map(noteKind => ({ label: labels[noteKind].label, detail: labels[noteKind].detail, noteKind } as vscode.QuickPickItem & { noteKind: NoteKind })),
     { placeHolder: 'What do you want to write?' }
   );
-  return pick?.kind;
+  return pick?.noteKind;
 }
 
 function interactiveNoteSnippet(languageId: string, kind: NoteKind): string | undefined {
   let lines: string[];
   switch (kind) {
-    case 'paragraph': lines = ['${1:Write your note here.}']; break;
-    case 'note': lines = ['# ${1:Topic}', '${2:Write your explanation here.}']; break;
-    case 'section': lines = ['# ${1:Section}', '${2:What this section covers.}']; break;
-    case 'definition': lines = ['# ${1:Concept}', '${2:Write the definition here.}']; break;
-    case 'warning': lines = ['# ${1:Watch out}', '${2:Explain the mistake or edge case.}']; break;
-    case 'complexity': lines = ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`']; break;
-    case 'quiz': lines = ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}']; break;
-    case 'checkpoint': lines = ['question: ${1:What should you be able to recall?}', 'answer: ${2:Write the expected answer.}']; break;
-    case 'tip': lines = ['# ${1:Tip}', '${2:Write the rule or shortcut.}']; break;
-    case 'example': lines = ['# ${1:Example}', '${2:Explain the example.}']; break;
-    case 'todo': lines = ['- [ ] ${1:Write the task.}']; break;
+    case 'paragraph':
+      lines = ['${id:entity.zero+1}:Write your note here.}'];
+      break;
+    case 'note':
+      lines = ['# ${1:Topic}', '${id:entity.zero+2}:Write your explanation here.}'];
+      break;
+    case 'section':
+      lines = ["# ${1:Section}", '${id:entity.zero+2}:What this section covers.}'];
+      break;
+    case 'definition':
+      lines = ["# ${1:Concept}", '${id:entity.zero+2}:Write the definition here.}'];
+      break;
+    case 'warning':
+      lines = ['# ${1:Watch out}', '${id:entity.zero+2}:Explain the mistake or edge case.}'];
+      break;
+    case 'complexity':
+      lines = ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`'];
+      break;
+    case 'quiz':
+      lines = ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}'];
+      break;
+    case 'checkpoint':
+      lines = ['question: ${1:What should you be able to recall?}', 'answer: ${2:Write the expected answer.}'];
+      break;
+    case 'tip':
+      lines = ['# ${1:Tip}', '${2:Write the rule or shortcut.}'];
+      break;
+    case 'example':
+      lines = ['# ${1:Example}', '${2:Explain the example.}'];
+      break;
+    case 'todo':
+      lines = ['- [ ] ${1:Write the task.}'];
+      break;
   }
   return wrapInteractiveLines(languageId, kind, lines);
 }
@@ -230,7 +252,9 @@ function wrapInteractiveLines(languageId: string, kind: string, innerLines: stri
   const adapter = getLanguageAdapter(languageId);
   if (!adapter) return undefined;
   const comment = adapter.comment;
-  if (comment.type === 'block') return [`${comment.open} @${kind}`, ...innerLines, comment.close].join('\n');
+  if (comment.type === 'block') {
+    return [`${comment.open} @${kind}`, ...innerLines, comment.close].join('\n');
+  }
   return [
     `${comment.prefix} @${kind}`,
     ...innerLines.map(value => value ? `${comment.prefix} ${value}` : comment.prefix),
@@ -243,7 +267,12 @@ async function searchWorkspace(index: WorkspaceNoteIndex): Promise<void> {
   const notes = index.all();
   if (!notes.length) return void vscode.window.showInformationMessage('No CodeNote blocks found in this workspace.');
   const pick = await vscode.window.showQuickPick(
-    notes.map(note => ({ label: note.block.title, description: `${note.block.kind} · ${note.relativePath}:L${note.block.range.start.line + 1}`, detail: note.block.metadata.tags.map(tag => `#${tag}`).join(' '), note })),
+    notes.map(note => ({
+      label: note.block.title,
+      description: `${note.block.kind} · ${note.relativePath}:L${note.block.range.start.line + 1}`,
+      detail: note.block.metadata.tags.map(tag => `#${tag}`).join(' '),
+      note
+    })),
     { placeHolder: `Search ${notes.length} workspace notes`, matchOnDescription: true, matchOnDetail: true }
   );
   if (pick) await revealBlock(pick.note.uri, pick.note.block.startOffset);
@@ -254,7 +283,11 @@ async function startReview(index: WorkspaceNoteIndex, review: ReviewStore, previ
   const due = index.all().filter(note => review.isDue(note.uri, note.block));
   if (!due.length) return void vscode.window.showInformationMessage('No quizzes are due.');
   const pick = await vscode.window.showQuickPick(
-    due.map(note => ({ label: note.block.title, description: `${note.relativePath} · ${note.block.metadata.difficulty || 'unrated'}`, note })),
+    due.map(note => ({
+      label: note.block.title,
+      description: `${note.relativePath} · ${note.block.metadata.difficulty || 'unrated'}`,
+      note
+    })),
     { placeHolder: `${due.length} review item${due.length === 1 ? '' : 's'} due` }
   );
   if (!pick) return;
@@ -305,7 +338,9 @@ async function exportWorkspaceNotes(notes: readonly IndexedNote[]): Promise<void
   if (!notes.length) return void vscode.window.showInformationMessage('No workspace notes to export.');
   const grouped = new Map<string, IndexedNote[]>();
   for (const note of notes) grouped.set(note.relativePath, [...(grouped.get(note.relativePath) || []), note]);
-  const sections = [...grouped.entries()].map(([file, items]) => `# ${file}\n\n${items.map(item => noteToMarkdown(item.block)).join('\n\n---\n\n')}`).join('\n\n');
+  const sections = [...grouped.entries()]
+    .map(([file, items]) => `# ${file}\n\n${items.map(item => noteToMarkdown(item.block)).join('\n\n---\n\n')}`)
+    .join('\n\n');
   const folder = vscode.workspace.workspaceFolders?.[0]?.uri;
   const defaultUri = folder ? vscode.Uri.joinPath(folder, 'CodeNote-Workspace-Notes.md') : undefined;
   const target = await vscode.window.showSaveDialog({ defaultUri, filters: { Markdown: ['md'] } });
@@ -321,8 +356,14 @@ function noteToMarkdown(block: NoteBlock): string {
 
 function activeSupportedDocument(): vscode.TextDocument | undefined {
   const document = vscode.window.activeTextEditor?.document;
-  if (!document) { vscode.window.showErrorMessage('Open a source file first.'); return; }
-  if (!isSupportedLanguage(document.languageId)) { vscode.window.showErrorMessage(`CodeNote does not support ${document.languageId} yet.`); return; }
+  if (!document) {
+    vscode.window.showErrorMessage('Open a source file first.');
+    return;
+  }
+  if (!isSupportedLanguage(document.languageId)) {
+    vscode.window.showErrorMessage(`CodeNote does not support ${document.languageId} yet.`);
+    return;
+  }
   return document;
 }
 
@@ -333,7 +374,10 @@ async function openSupportedDocument(uri: vscode.Uri): Promise<vscode.TextDocume
 }
 
 function updateStatus(editor: vscode.TextEditor | undefined, status: vscode.StatusBarItem, index: WorkspaceNoteIndex, review: ReviewStore): void {
-  if (!editor || !isSupportedLanguage(editor.document.languageId)) { status.hide(); return; }
+  if (!editor || !isSupportedLanguage(editor.document.languageId)) {
+    status.hide();
+    return;
+  }
   const count = parseNoteBlocks(editor.document).length;
   const due = index.all().filter(note => review.isDue(note.uri, note.block)).length;
   status.text = `$(notebook) ${count}${due ? ` · $(history) ${due}` : ''}`;
