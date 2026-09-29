@@ -5,6 +5,7 @@
 - `snap-*.png`: original 2x canvas exports from all eight working Snap Studio templates. Their smaller `.webp` counterparts are display previews; download links retain the full PNGs.
 - `readme-banner.svg`, `favicon.svg`, `og-image.png`, and `support.gif`: original website/README graphics. The GIF is an animated controller illustration, not an extension screenshot.
 - `download-pointer.png`: user-provided pointer image used for the download callout.
+- `cnote-logo.png` and `cnote-logo-192.png`: resized web assets from the user-provided .cnote logo image.
 - `space-grotesk-latin.woff2`: Google Fonts' Space Grotesk Latin variable font, distributed with `OFL-Space-Grotesk.txt`.
 - Donation QR: `../media/readme/upi-qr.svg`, reused unchanged from the original repository.
 
