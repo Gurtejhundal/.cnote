@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260" role="img" aria-label=".cnote logo">
+<defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#5c7cff"/><stop offset=".45" stop-color="#6fe8ff"/><stop offset=".72" stop-color="#a879ff"/><stop offset="1" stop-color="#f061dc"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="900" height="260" rx="36" fill="#090b12"/>
+<text x="450" y="178" text-anchor="middle" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="160" font-weight="800" letter-spacing="-8" fill="url(#g)" filter="url(#glow)">.cnote</text>
+</svg>
