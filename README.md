@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.1.1.vsix"><b>⬇ grab .cnote 6.1.1</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><b>⬇ grab .cnote 6.2.0</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -73,7 +73,9 @@ Read in order. Filter the noise. Reveal the answer. Grade your recall. Jump back
 
 **Aurora · Midnight · Sunset · Forest · Paper · Minimal · Ocean · Lavender**
 
-Select code or capture the visible editor. Set width, spacing, font size, line numbers, window dots, and branding. Save a 2× PNG. Your choices stick around between sessions.
+V6.2 makes Snap predictable: **select code first and Snap captures only that selection; leave nothing selected and it captures the code currently visible in the editor.** The live preview and all eight template choices are rendered immediately, while visual `.cnote` notes stay visual instead of falling back to raw comment syntax.
+
+Set width, spacing, font size, line numbers, window dots, and branding. Save a 2× PNG. Your choices stick around between sessions.
 
 [Try all eight actual exported samples on the website →](https://gurtejhundal.github.io/.cnote/#snap)
 
@@ -98,7 +100,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.1.1.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.1.1.vsix).
+1. [Download **codenote-6.2.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 
