@@ -37,7 +37,7 @@ jobs:
       - name: Package VSIX
         run: |
           mkdir -p downloads
-          cp README.md README.github.md
+          cp README.md /tmp/README.github.md
           python - <<'PY'
           from pathlib import Path
           import re
@@ -49,13 +49,13 @@ jobs:
           p.write_text(text, encoding='utf-8')
           PY
           npx vsce package -o downloads/codenote-6.0.0.vsix
-          mv README.github.md README.md
+          cp /tmp/README.github.md README.md
 
       - name: Publish installable VSIX to repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
+          git checkout -- README.md package-lock.json 2>/dev/null || true
           git add -f downloads/codenote-6.0.0.vsix
           if git diff --cached --quiet; then
             echo "VSIX unchanged"
