@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.1.1
+
+- Added a dedicated 256×256 `.cnote` extension icon for the VS Code Extensions view and Marketplace.
+- Added deterministic icon generation in CI so release builds always include the correct PNG asset.
+- Replaced the temporary `local-dev` publisher value with `gurtejhundal`.
+- Added Marketplace-facing author, issues, pricing and gallery banner metadata.
+- Updated the release package to `codenote-6.1.1.vsix`.
+
 ## 6.1.0
 
 - Reworked the editor-title toolbar to only show Note, Snap and a compact `.cnote` menu.
