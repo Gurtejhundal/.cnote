@@ -2,8 +2,19 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { parseNoteBlocks } from './parser';
 import { getLanguageAdapter } from './languageAdapters';
+import { escapeHtml } from './markdown';
 
-type SnapLineKind = 'code' | 'blank' | 'boundary' | 'note' | 'heading1' | 'heading2' | 'heading3' | 'quote' | 'warning' | 'meta';
+type SnapLineKind =
+  | 'code'
+  | 'blank'
+  | 'boundary'
+  | 'note'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'quote'
+  | 'warning'
+  | 'meta';
 
 interface SnapLine {
   text: string;
@@ -30,6 +41,17 @@ type Prefs = {
   branding: boolean;
 };
 
+const THEMES = {
+  aurora:   { name: 'Aurora',   a: '#5B5FEF', b: '#28C5D9', c: '#F368B3', card: '#10131B', text: '#EEF3F8', muted: '#7D8999' },
+  midnight: { name: 'Midnight', a: '#0B1220', b: '#0F3550', c: '#183C5D', card: '#090F18', text: '#EEF6FF', muted: '#74869A' },
+  sunset:   { name: 'Sunset',   a: '#F45B69', b: '#8B4BE8', c: '#F29C38', card: '#1B141E', text: '#FFF5EB', muted: '#A99BAC' },
+  forest:   { name: 'Forest',   a: '#0D4A35', b: '#147A54', c: '#1E8D82', card: '#081A14', text: '#ECFFF6', muted: '#79968B' },
+  paper:    { name: 'Paper',    a: '#E7E0D6', b: '#F8F4EC', c: '#D9CCB8', card: '#FFFDF8', text: '#202124', muted: '#7B746B' },
+  minimal:  { name: 'Minimal',  a: '#151515', b: '#1E1E1E', c: '#151515', card: '#181818', text: '#EEEEEE', muted: '#777777' },
+  ocean:    { name: 'Ocean',    a: '#075985', b: '#0891B2', c: '#22D3EE', card: '#071724', text: '#ECFEFF', muted: '#7093A2' },
+  lavender: { name: 'Lavender', a: '#4F46E5', b: '#7C3AED', c: '#D946EF', card: '#171324', text: '#FAF5FF', muted: '#958BAD' }
+} as const;
+
 export class SnapStudioManager implements vscode.Disposable {
   private panel?: vscode.WebviewPanel;
   private current?: SnapPayload;
@@ -39,6 +61,7 @@ export class SnapStudioManager implements vscode.Disposable {
 
   async open(editor: vscode.TextEditor): Promise<void> {
     this.current = captureEditor(editor);
+
     if (!this.panel) {
       this.panel = vscode.window.createWebviewPanel(
         'codenote.snapStudio',
@@ -46,18 +69,22 @@ export class SnapStudioManager implements vscode.Disposable {
         vscode.ViewColumn.Beside,
         { enableScripts: true, retainContextWhenHidden: true }
       );
+
       this.listener = this.panel.webview.onDidReceiveMessage(async (message: any) => {
         if (message?.type === 'prefs') {
           await this.context.globalState.update('codenote.snapPreferences', message.value);
+          return;
         }
         if (message?.type === 'copy' && this.current) {
           await vscode.env.clipboard.writeText(this.current.rawCode);
           vscode.window.setStatusBarMessage('.cnote · source copied', 1200);
+          return;
         }
         if (message?.type === 'save' && typeof message.data === 'string') {
           await savePng(message.data, String(message.name || 'cnote-snap.png'));
         }
       });
+
       this.panel.onDidDispose(() => {
         this.listener?.dispose();
         this.listener = undefined;
@@ -66,6 +93,7 @@ export class SnapStudioManager implements vscode.Disposable {
     } else {
       this.panel.reveal(vscode.ViewColumn.Beside, false);
     }
+
     this.panel.title = `Snap · ${this.current.filename}`;
     this.panel.webview.html = this.html(this.current);
   }
@@ -87,49 +115,276 @@ export class SnapStudioManager implements vscode.Disposable {
       windowDots: Boolean(stored.windowDots ?? true),
       branding: Boolean(stored.branding ?? cfg.get('snap.branding', false))
     };
+
     const data = JSON.stringify({ ...payload, initial }).replace(/</g, '\\u003c');
     const nonce = createNonce();
 
-    return String.raw`<!doctype html>
+    const themeButtons = Object.entries(THEMES).map(([id, t]) =>
+      `<button class="theme theme-${id}" data-theme="${id}" type="button" aria-label="${escapeHtml(t.name)} template"><span>${escapeHtml(t.name)}</span></button>`
+    ).join('');
+
+    const rows = payload.lines.map(line => {
+      const cls = `code-row ${line.kind}`;
+      const lineNo = line.sourceLine > 0 ? String(line.sourceLine) : '';
+      return `<div class="${cls}"><span class="ln">${escapeHtml(lineNo)}</span><span class="txt">${escapeHtml(line.text || ' ')}</span></div>`;
+    }).join('');
+
+    return `<!doctype html>
 <html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}';">
 <style nonce="${nonce}">
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;color:var(--vscode-editor-foreground);background:var(--vscode-editor-background);font:13px var(--vscode-font-family)}body{overflow:auto}.top{position:sticky;top:0;z-index:20;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--vscode-panel-border);background:color-mix(in srgb,var(--vscode-editor-background) 96%,transparent);backdrop-filter:blur(10px)}.brand{display:flex;align-items:center;gap:9px}.brand b{font-size:14px}.brand span{font-size:11px;opacity:.58}.actions{display:flex;gap:8px}.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--vscode-button-background);color:var(--vscode-button-foreground);font-weight:700;cursor:pointer}.btn.secondary{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground)}
-.stage{min-height:420px;padding:26px 22px 18px;display:flex;align-items:flex-start;justify-content:center;overflow:auto;background:radial-gradient(circle at 50% 15%,color-mix(in srgb,var(--vscode-focusBorder) 8%,transparent),transparent 52%)}.shot-scale{width:min(100%,1100px);display:flex;justify-content:center}.shot{--a:#6d5dfc;--b:#22c7d9;--c:#ff75a8;--card:#11141d;--text:#edf2f7;--muted:#788496;--kw:#c792ea;--str:#c3e88d;--num:#f78c6c;--op:#89ddff;width:100%;max-width:980px;padding:42px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:20px;box-shadow:0 22px 55px #0008}.window{background:var(--card);border-radius:15px;overflow:hidden;box-shadow:0 18px 44px #0007}.window-head{height:62px;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid #ffffff10}.dots{display:flex;gap:8px;margin-right:18px}.dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:3px}.code{padding:26px 24px 30px;overflow:auto;font-family:Consolas,"Liberation Mono",monospace;font-size:15px;line-height:1.62}.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.62em}.ln{width:42px;padding-right:15px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre;color:var(--text)}.code-row.boundary .txt{color:var(--muted);font-weight:700}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.3em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.16em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.05em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:700;color:#ffcf66}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:color-mix(in srgb,var(--text) 78%,var(--muted))}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.9em}.tok-kw{color:var(--kw)}.tok-str{color:var(--str)}.tok-num{color:var(--num)}.tok-op{color:var(--op)}.tok-comment{color:var(--muted)}.brandmark{display:none;padding:0 24px 16px;text-align:right;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
-.controls{border-top:1px solid var(--vscode-panel-border);background:var(--vscode-sideBar-background);padding:14px 18px 24px}.themes{display:flex;gap:8px;overflow:auto;padding-bottom:10px}.theme{min-width:104px;height:42px;border-radius:8px;border:2px solid transparent;position:relative;cursor:pointer;flex:0 0 auto}.theme.on{border-color:var(--vscode-focusBorder)}.theme span{position:absolute;left:8px;bottom:5px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 3px #000}.quick{display:grid;grid-template-columns:minmax(160px,1.3fr) repeat(2,minmax(110px,.7fr));gap:10px;margin-top:4px}.field label,.advanced label{display:block;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.65;margin-bottom:6px}.field input,.field select,.advanced input,.advanced select{width:100%;padding:7px 9px;border:1px solid var(--vscode-input-border,transparent);border-radius:6px;background:var(--vscode-input-background);color:var(--vscode-input-foreground)}details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-top:11px}summary{cursor:pointer;font-weight:700;user-select:none}.advanced{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px;margin-top:12px}.check{display:flex!important;align-items:center;gap:8px;text-transform:none!important;letter-spacing:0!important;font-size:12px!important;opacity:1!important;margin-top:20px}.check input{width:auto!important}.hint{font-size:10px;opacity:.58;margin-top:12px}.preview-badge{position:sticky;left:14px;top:10px;align-self:flex-start;z-index:2;padding:4px 8px;border-radius:999px;background:var(--vscode-badge-background);color:var(--vscode-badge-foreground);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-@media(max-width:760px){.brand span{display:none}.stage{padding:18px 10px;min-height:360px}.shot{padding:24px;border-radius:14px}.code{padding:20px 14px;font-size:12px}.quick{grid-template-columns:1fr 1fr}.quick .field:first-child{grid-column:1/-1}.advanced{grid-template-columns:1fr 1fr}.top{padding:0 10px}.btn{padding:7px 9px}}
+*{box-sizing:border-box}
+:root{--a:#5B5FEF;--b:#28C5D9;--c:#F368B3;--card:#10131B;--text:#EEF3F8;--muted:#7D8999}
+html,body{margin:0;min-height:100%;color:var(--vscode-editor-foreground);background:var(--vscode-editor-background);font:13px var(--vscode-font-family)}
+body{overflow:auto}
+.top{position:sticky;top:0;z-index:30;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--vscode-panel-border);background:var(--vscode-editor-background)}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}.brand b{font-size:14px}.brand span{font-size:11px;opacity:.62;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;gap:8px}.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--vscode-button-background);color:var(--vscode-button-foreground);font-weight:700;cursor:pointer}.btn.secondary{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground)}
+.stage{padding:22px 18px 18px;display:flex;justify-content:center;overflow:auto;min-height:350px}
+.shot{width:min(100%,980px);padding:42px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:20px}
+.window{background:var(--card);border-radius:15px;overflow:hidden;box-shadow:0 18px 40px #0007}
+.window-head{height:62px;display:flex;align-items:center;padding:0 22px;border-bottom:1px solid #ffffff10}
+.dots{display:flex;gap:8px;margin-right:18px}.dot{width:10px;height:10px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:3px}
+.code{padding:24px 22px 28px;overflow:auto;font-family:Consolas,"Liberation Mono",monospace;font-size:15px;line-height:1.62}
+.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.62em}.ln{width:44px;padding-right:14px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.3em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.16em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.05em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
+.hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
+.brandmark{display:none;padding:0 22px 16px;text-align:right;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
+.controls{border-top:1px solid var(--vscode-panel-border);background:var(--vscode-sideBar-background);padding:14px 18px 24px}
+.control-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.control-title b{font-size:11px}.control-title span{font-size:10px;opacity:.55}
+.themes{display:flex;gap:8px;overflow:auto;padding:2px 0 12px}.theme{min-width:112px;height:48px;border-radius:9px;border:2px solid transparent;position:relative;cursor:pointer;flex:0 0 auto}.theme.on{border-color:var(--vscode-focusBorder)}.theme span{position:absolute;left:8px;bottom:6px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 3px #000}
+.theme-aurora{background:linear-gradient(135deg,#5B5FEF,#28C5D9,#F368B3)}.theme-midnight{background:linear-gradient(135deg,#0B1220,#0F3550,#183C5D)}.theme-sunset{background:linear-gradient(135deg,#F45B69,#8B4BE8,#F29C38)}.theme-forest{background:linear-gradient(135deg,#0D4A35,#147A54,#1E8D82)}.theme-paper{background:linear-gradient(135deg,#D8CCB9,#F8F4EC,#E7E0D6)}.theme-minimal{background:linear-gradient(135deg,#111,#272727,#111)}.theme-ocean{background:linear-gradient(135deg,#075985,#0891B2,#22D3EE)}.theme-lavender{background:linear-gradient(135deg,#4F46E5,#7C3AED,#D946EF)}
+.quick{display:grid;grid-template-columns:minmax(170px,1.4fr) repeat(2,minmax(110px,.7fr));gap:10px}.field label,.advanced .label{display:block;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;opacity:.65;margin-bottom:6px}.field input,.field select{width:100%;padding:7px 9px;border:1px solid var(--vscode-input-border,transparent);border-radius:6px;background:var(--vscode-input-background);color:var(--vscode-input-foreground)}
+details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-top:11px}summary{cursor:pointer;font-weight:700;user-select:none}.advanced{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px;margin-top:12px}.advanced input[type=range]{width:100%}.check{display:flex;align-items:center;gap:8px;margin-top:20px}.hint{font-size:10px;opacity:.62;margin-top:12px;line-height:1.5}
+.empty{padding:32px;color:var(--muted);text-align:center}
+@media(max-width:760px){.brand span{display:none}.stage{padding:14px 8px}.shot{padding:22px;border-radius:14px}.code{padding:18px 12px;font-size:12px}.quick{grid-template-columns:1fr 1fr}.quick .field:first-child{grid-column:1/-1}.advanced{grid-template-columns:1fr 1fr}.top{padding:0 9px}.btn{padding:7px 9px}}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><b>.cnote Snap</b><span id="sourceMeta"></span></div><div class="actions"><button class="btn secondary" id="copy">Copy source</button><button class="btn" id="save">Save PNG</button></div></div>
-<div class="stage"><span class="preview-badge">live preview</span><div class="shot-scale"><div class="shot" id="shot"><div class="window" id="window"><div class="window-head"><div class="dots" id="dotsWrap"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i></div><div class="file-title"><strong id="previewTitle"></strong><small id="previewMeta"></small></div></div><div class="code" id="code"></div><div class="brandmark">.cnote</div></div></div></div></div>
-<div class="controls"><div class="themes" id="themes"></div><div class="quick"><div class="field"><label>Title</label><input id="title" type="text"></div><div class="field"><label>Spacing</label><select id="padding"><option value="36">Compact</option><option value="60">Balanced</option><option value="92">Wide</option></select></div><div class="field"><label>Width</label><select id="width"><option value="1080">1080</option><option value="1320">1320</option><option value="1600">1600</option></select></div></div><details><summary>More controls</summary><div class="advanced"><div><label>Font size</label><input id="font" type="range" min="16" max="30"></div><label class="check"><input id="nums" type="checkbox">Line numbers</label><label class="check"><input id="dots" type="checkbox">Window dots</label><label class="check"><input id="brand" type="checkbox">.cnote mark</label></div></details><div class="hint">Settings are remembered automatically. Snapshot notes use the same visual text as inline mode; raw <code>/* @note */</code> syntax is not shown in the preview.</div></div>
+<div class="top">
+  <div class="brand"><b>.cnote Snap</b><span id="sourceMeta">${escapeHtml(payload.sourceLabel)}</span></div>
+  <div class="actions"><button class="btn secondary" id="copy" type="button">Copy source</button><button class="btn" id="save" type="button">Save PNG</button></div>
+</div>
+
+<div class="stage">
+  <div class="shot" id="shot">
+    <div class="window" id="window">
+      <div class="window-head">
+        <div class="dots" id="dotsWrap"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i></div>
+        <div class="file-title"><strong id="previewTitle">${escapeHtml(payload.filename)}</strong><small id="previewMeta">${escapeHtml(payload.languageId)} · ${escapeHtml(payload.sourceLabel)}</small></div>
+      </div>
+      <div class="code" id="code">${rows || '<div class="empty">Nothing to capture.</div>'}</div>
+      <div class="brandmark">.cnote</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="control-title"><b>Templates</b><span>pick a vibe</span></div>
+  <div class="themes" id="themes">${themeButtons}</div>
+
+  <div class="quick">
+    <div class="field"><label>Title</label><input id="title" type="text" value="${escapeHtml(payload.filename)}"></div>
+    <div class="field"><label>Spacing</label><select id="padding"><option value="36">Compact</option><option value="60">Balanced</option><option value="92">Wide</option></select></div>
+    <div class="field"><label>Width</label><select id="width"><option value="1080">1080</option><option value="1320">1320</option><option value="1600">1600</option></select></div>
+  </div>
+
+  <details>
+    <summary>More controls</summary>
+    <div class="advanced">
+      <div><span class="label">Font size</span><input id="font" type="range" min="16" max="30"></div>
+      <label class="check"><input id="nums" type="checkbox">Line numbers</label>
+      <label class="check"><input id="dots" type="checkbox">Window dots</label>
+      <label class="check"><input id="brand" type="checkbox">.cnote mark</label>
+    </div>
+  </details>
+
+  <div class="hint">
+    ${escapeHtml(payload.sourceLabel)}. If code is selected before opening Snap, only that selection is captured. With no selection, Snap captures the code currently visible in the editor. Settings are remembered automatically.
+  </div>
+</div>
+
 <canvas id="exportCanvas" hidden></canvas>
+
 <script nonce="${nonce}">
-const vscode=acquireVsCodeApi();
-const D=${data};
-const themes={aurora:{n:'Aurora',a:'#6d5dfc',b:'#22c7d9',c:'#ff75a8',card:'#11141d',text:'#edf2f7',muted:'#788496',kw:'#c792ea',str:'#c3e88d',num:'#f78c6c',op:'#89ddff'},midnight:{n:'Midnight',a:'#07111f',b:'#103b52',c:'#0b536b',card:'#091019',text:'#edf5ff',muted:'#6f8094',kw:'#7dd3fc',str:'#bef264',num:'#fda4af',op:'#67e8f9'},sunset:{n:'Sunset',a:'#ff6b6b',b:'#7c3aed',c:'#f59e0b',card:'#19131e',text:'#fff7ed',muted:'#aa9cad',kw:'#f0abfc',str:'#bef264',num:'#fda4af',op:'#fcd34d'},forest:{n:'Forest',a:'#052e16',b:'#14532d',c:'#0f766e',card:'#071711',text:'#ecfdf5',muted:'#78958a',kw:'#93c5fd',str:'#bef264',num:'#fbbf24',op:'#6ee7b7'},paper:{n:'Paper',a:'#ebe5db',b:'#f8f4ec',c:'#d8ccb9',card:'#fffdf8',text:'#202124',muted:'#7b746b',kw:'#7c3aed',str:'#15803d',num:'#c2410c',op:'#0369a1'},minimal:{n:'Minimal',a:'#111',b:'#1b1b1b',c:'#111',card:'#181818',text:'#eee',muted:'#777',kw:'#bbb',str:'#ddd',num:'#aaa',op:'#ccc'},ocean:{n:'Ocean',a:'#0369a1',b:'#0891b2',c:'#22d3ee',card:'#071724',text:'#ecfeff',muted:'#6f94a3',kw:'#a78bfa',str:'#bef264',num:'#fbbf24',op:'#67e8f9'},lavender:{n:'Lavender',a:'#4338ca',b:'#7c3aed',c:'#d946ef',card:'#171324',text:'#faf5ff',muted:'#9288aa',kw:'#c4b5fd',str:'#bef264',num:'#f9a8d4',op:'#93c5fd'}};
-let s=Object.assign({},D.initial);
-const el=id=>document.getElementById(id);const title=el('title'),padding=el('padding'),width=el('width'),font=el('font'),nums=el('nums'),dots=el('dots'),brand=el('brand'),shot=el('shot'),win=el('window'),code=el('code'),dotsWrap=el('dotsWrap'),previewTitle=el('previewTitle'),previewMeta=el('previewMeta');
-title.value=D.filename;padding.value=String(s.padding);width.value=String(s.width);font.value=String(s.fontSize);nums.checked=s.lineNumbers;dots.checked=s.windowDots;brand.checked=s.branding;el('sourceMeta').textContent=D.sourceLabel+(D.truncated?' · truncated':'');
-const box=el('themes');Object.entries(themes).forEach(entry=>{const id=entry[0],t=entry[1],b=document.createElement('button');b.className='theme';b.dataset.id=id;b.style.background='linear-gradient(135deg,'+t.a+','+t.b+','+t.c+')';const label=document.createElement('span');label.textContent=t.n;b.appendChild(label);b.onclick=()=>{s.theme=id;syncThemes();render();persist()};box.appendChild(b)});
-function syncThemes(){document.querySelectorAll('.theme').forEach(x=>x.classList.toggle('on',x.dataset.id===s.theme))}
-const keywords=new Set('auto bool break case catch char class const constexpr continue def delete do double else enum export false float for friend function if import in inline int interface let long namespace new null nullptr operator package private protected public return short signed sizeof static string struct switch template this throw true try typedef typename union unsigned use using var vector virtual void volatile while with yield async await fn impl pub'.split(' '));
-function tokens(line){let out=[],i=0;while(i<line.length){let r=line.slice(i),m;if(r.startsWith('//')){out.push(['comment',r]);break}if((m=r.match(/^\s+/))){out.push(['text',m[0]]);i+=m[0].length;continue}if((m=r.match(/^[A-Za-z_$][\w$]*/))){out.push([keywords.has(m[0])?'kw':'text',m[0]]);i+=m[0].length;continue}if((m=r.match(/^(?:0x[\da-fA-F]+|\d+(?:\.\d+)?)/))){out.push(['num',m[0]]);i+=m[0].length;continue}if(r[0]==='"'||r[0]==="'"){let q=r[0],j=1;while(j<r.length){if(r[j]==='\\'){j+=2;continue}if(r[j]===q){j++;break}j++}out.push(['str',r.slice(0,j)]);i+=j;continue}out.push([/[{}()[\];,.<>:+\-*\/%=&|!^~?#]/.test(r[0])?'op':'text',r[0]]);i++}return out}
-function appendCodeText(container,text){for(const pair of tokens(text)){const span=document.createElement('span');span.textContent=pair[1];if(pair[0]!=='text')span.className='tok-'+pair[0];container.appendChild(span)}}
-function renderLines(){code.replaceChildren();for(const line of D.lines){const row=document.createElement('div');row.className='code-row '+line.kind;const ln=document.createElement('span');ln.className='ln';ln.textContent=s.lineNumbers?String(line.sourceLine):'';const txt=document.createElement('span');txt.className='txt';if(line.kind==='code')appendCodeText(txt,line.text);else txt.textContent=line.text||' ';row.append(ln,txt);code.appendChild(row)}}
-function applyTheme(){const t=themes[s.theme]||themes.aurora;for(const k of ['a','b','c','card','text','muted','kw','str','num','op'])shot.style.setProperty('--'+k,t[k])}
-let timer;function persist(){clearTimeout(timer);timer=setTimeout(()=>vscode.postMessage({type:'prefs',value:s}),90)}
-function render(){s.padding=Number(padding.value);s.width=Number(width.value);s.fontSize=Number(font.value);s.lineNumbers=nums.checked;s.windowDots=dots.checked;s.branding=brand.checked;applyTheme();syncThemes();previewTitle.textContent=title.value||D.filename;previewMeta.textContent=D.languageId+' · '+D.sourceLabel;shot.style.padding=Math.max(20,Math.round(s.padding*.7))+'px';shot.style.maxWidth=Math.min(980,Math.max(620,s.width*.74))+'px';code.style.fontSize=Math.max(11,Math.round(s.fontSize*.72))+'px';dotsWrap.style.display=s.windowDots?'flex':'none';win.classList.toggle('show-brand',s.branding);renderLines()}
-[padding,width,nums,dots,brand].forEach(e=>e.addEventListener('change',()=>{render();persist()}));font.addEventListener('input',()=>{render();persist()});title.addEventListener('input',render);syncThemes();render();
-function round(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
-function gradient(ctx,t,w,h){const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,t.a);g.addColorStop(.52,t.b);g.addColorStop(1,t.c);return g}
-function canvasTokens(ctx,text,x,y,t,fontSpec){ctx.font=fontSpec;for(const pair of tokens(text)){const k=pair[0],v=pair[1];ctx.fillStyle=k==='kw'?t.kw:k==='str'?t.str:k==='num'?t.num:k==='op'?t.op:k==='comment'?t.muted:t.text;ctx.fillText(v,x,y);x+=ctx.measureText(v).width}}
-function drawExport(){const canvas=el('exportCanvas'),ctx=canvas.getContext('2d'),t=themes[s.theme]||themes.aurora,scale=2,W=s.width,p=s.padding,cardX=p,cardY=p,cardW=W-p*2,head=84,lh=Math.round(s.fontSize*1.55),top=cardY+head+34,cardH=head+34+Math.max(D.lines.length,1)*lh+42,H=cardY+cardH+p;canvas.width=W*scale;canvas.height=H*scale;ctx.setTransform(scale,0,0,scale,0,0);ctx.fillStyle=gradient(ctx,t,W,H);ctx.fillRect(0,0,W,H);ctx.save();ctx.shadowColor='#0008';ctx.shadowBlur=34;ctx.shadowOffsetY=15;ctx.fillStyle=t.card;round(ctx,cardX,cardY,cardW,cardH,22);ctx.fill();ctx.restore();ctx.fillStyle=t.card;round(ctx,cardX,cardY,cardW,cardH,22);ctx.fill();if(s.windowDots){['#ff5f57','#febc2e','#28c840'].forEach((c,i)=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(cardX+30+i*21,cardY+28,6,0,Math.PI*2);ctx.fill()})}ctx.fillStyle=t.text;ctx.font='650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(title.value||D.filename,cardX+(s.windowDots?112:32),cardY+37);ctx.fillStyle=t.muted;ctx.font='500 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(D.languageId+' · '+D.sourceLabel,cardX+(s.windowDots?112:32),cardY+59);const gutter=s.lineNumbers?55:0,x=cardX+38+gutter,mono='500 '+s.fontSize+'px Consolas,"Liberation Mono",monospace';D.lines.forEach((line,i)=>{const y=top+i*lh;if(s.lineNumbers){ctx.textAlign='right';ctx.fillStyle=t.muted;ctx.font='500 '+Math.max(12,s.fontSize-3)+'px Consolas,monospace';ctx.fillText(String(line.sourceLine),cardX+58,y);ctx.textAlign='left'}if(line.kind==='code'){canvasTokens(ctx,line.text,x,y,t,mono);return}ctx.fillStyle=line.kind==='boundary'||line.kind==='meta'?t.muted:line.kind==='warning'?'#ffcf66':t.text;const size=line.kind==='heading1'?Math.round(s.fontSize*1.28):line.kind==='heading2'?Math.round(s.fontSize*1.14):line.kind==='heading3'?Math.round(s.fontSize*1.05):s.fontSize;const weight=line.kind.indexOf('heading')===0||line.kind==='warning'?'700':'550';ctx.font=weight+' '+size+'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText(line.text||' ',x,y)});if(s.branding){ctx.textAlign='right';ctx.fillStyle=t.muted;ctx.font='700 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';ctx.fillText('.cnote',cardX+cardW-28,cardY+cardH-18);ctx.textAlign='left'}return canvas}
-el('copy').onclick=()=>vscode.postMessage({type:'copy'});el('save').onclick=()=>{render();persist();const canvas=drawExport();const safe=(title.value||D.filename).replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]+/gi,'-')||'cnote-snap';vscode.postMessage({type:'save',data:canvas.toDataURL('image/png'),name:safe+'.png'})};
+const vscode = acquireVsCodeApi();
+const D = ${data};
+const themes = ${JSON.stringify(THEMES)};
+let s = Object.assign({}, D.initial);
+
+const byId = (id) => document.getElementById(id);
+const shot = byId('shot');
+const win = byId('window');
+const title = byId('title');
+const padding = byId('padding');
+const width = byId('width');
+const font = byId('font');
+const nums = byId('nums');
+const dots = byId('dots');
+const brand = byId('brand');
+const previewTitle = byId('previewTitle');
+const exportCanvas = byId('exportCanvas');
+
+padding.value = String(s.padding);
+width.value = String(s.width);
+font.value = String(s.fontSize);
+nums.checked = !!s.lineNumbers;
+dots.checked = !!s.windowDots;
+brand.checked = !!s.branding;
+
+function applyTheme() {
+  const t = themes[s.theme] || themes.aurora;
+  shot.style.setProperty('--a', t.a);
+  shot.style.setProperty('--b', t.b);
+  shot.style.setProperty('--c', t.c);
+  shot.style.setProperty('--card', t.card);
+  shot.style.setProperty('--text', t.text);
+  shot.style.setProperty('--muted', t.muted);
+  document.querySelectorAll('.theme').forEach((node) => node.classList.toggle('on', node.dataset.theme === s.theme));
+}
+
+function applyLayout() {
+  s.padding = Number(padding.value);
+  s.width = Number(width.value);
+  s.fontSize = Number(font.value);
+  s.lineNumbers = !!nums.checked;
+  s.windowDots = !!dots.checked;
+  s.branding = !!brand.checked;
+
+  const displayPad = Math.max(20, Math.round(s.padding * 0.7));
+  shot.style.padding = displayPad + 'px';
+  shot.style.maxWidth = Math.min(980, Math.max(560, s.width * 0.74)) + 'px';
+  document.getElementById('code').style.fontSize = Math.max(12, Math.round(s.fontSize * 0.72)) + 'px';
+  win.classList.toggle('hide-lines', !s.lineNumbers);
+  win.classList.toggle('hide-dots', !s.windowDots);
+  win.classList.toggle('show-brand', s.branding);
+  previewTitle.textContent = title.value || D.filename;
+}
+
+let persistTimer;
+function persist() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => vscode.postMessage({ type: 'prefs', value: s }), 100);
+}
+
+function update() {
+  applyTheme();
+  applyLayout();
+  persist();
+}
+
+document.querySelectorAll('.theme').forEach((node) => {
+  node.addEventListener('click', () => {
+    s.theme = node.dataset.theme || 'aurora';
+    update();
+  });
+});
+
+[padding, width, nums, dots, brand].forEach((node) => node.addEventListener('change', update));
+font.addEventListener('input', update);
+title.addEventListener('input', () => { previewTitle.textContent = title.value || D.filename; });
+
+function exportPng() {
+  const t = themes[s.theme] || themes.aurora;
+  const scale = 2;
+  const W = s.width;
+  const pad = s.padding;
+  const lineHeight = Math.round(s.fontSize * 1.55);
+  const header = 84;
+  const gutter = s.lineNumbers ? 56 : 0;
+  const cardX = pad;
+  const cardY = pad;
+  const cardW = W - pad * 2;
+  const cardH = header + 42 + Math.max(1, D.lines.length) * lineHeight + 46;
+  const H = cardH + pad * 2;
+
+  exportCanvas.width = W * scale;
+  exportCanvas.height = H * scale;
+  const ctx = exportCanvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, t.a);
+  g.addColorStop(0.52, t.b);
+  g.addColorStop(1, t.c);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+
+  roundedRect(ctx, cardX, cardY, cardW, cardH, 22, t.card);
+
+  if (s.windowDots) {
+    ['#ff5f57','#febc2e','#28c840'].forEach((color, i) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(cardX + 30 + i * 21, cardY + 28, 6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  ctx.fillStyle = t.text;
+  ctx.font = '650 23px Arial, sans-serif';
+  ctx.fillText(title.value || D.filename, cardX + (s.windowDots ? 112 : 32), cardY + 36);
+  ctx.fillStyle = t.muted;
+  ctx.font = '500 13px Arial, sans-serif';
+  ctx.fillText(D.languageId + ' · ' + D.sourceLabel, cardX + (s.windowDots ? 112 : 32), cardY + 58);
+
+  const startY = cardY + header + 34;
+  const x = cardX + 38 + gutter;
+
+  D.lines.forEach((line, i) => {
+    const y = startY + i * lineHeight;
+    if (s.lineNumbers && line.sourceLine > 0) {
+      ctx.textAlign = 'right';
+      ctx.fillStyle = t.muted;
+      ctx.font = '500 ' + Math.max(12, s.fontSize - 3) + 'px Consolas, monospace';
+      ctx.fillText(String(line.sourceLine), cardX + 58, y);
+      ctx.textAlign = 'left';
+    }
+
+    if (line.kind === 'heading1') ctx.font = '800 ' + Math.round(s.fontSize * 1.25) + 'px Arial, sans-serif';
+    else if (line.kind === 'heading2') ctx.font = '750 ' + Math.round(s.fontSize * 1.12) + 'px Arial, sans-serif';
+    else if (line.kind === 'heading3') ctx.font = '700 ' + s.fontSize + 'px Arial, sans-serif';
+    else if (line.kind === 'note' || line.kind === 'quote' || line.kind === 'warning' || line.kind === 'meta') ctx.font = '550 ' + s.fontSize + 'px Arial, sans-serif';
+    else ctx.font = '500 ' + s.fontSize + 'px Consolas, monospace';
+
+    ctx.fillStyle = line.kind === 'boundary' || line.kind === 'meta' || line.kind === 'quote' ? t.muted : (line.kind === 'warning' ? '#ffcc66' : t.text);
+    ctx.fillText(line.text || ' ', x, y);
+  });
+
+  if (s.branding) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = t.muted;
+    ctx.font = '700 13px Arial, sans-serif';
+    ctx.fillText('.cnote', cardX + cardW - 28, cardY + cardH - 18);
+    ctx.textAlign = 'left';
+  }
+
+  const safeName = (title.value || D.filename).replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]+/gi, '-');
+  vscode.postMessage({ type: 'save', data: exportCanvas.toDataURL('image/png'), name: safeName + '.png' });
+}
+
+function roundedRect(ctx, x, y, w, h, r, fill) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+byId('copy').addEventListener('click', () => vscode.postMessage({ type: 'copy' }));
+byId('save').addEventListener('click', exportPng);
+
+applyTheme();
+applyLayout();
 </script>
 </body>
 </html>`;
@@ -138,60 +393,82 @@ el('copy').onclick=()=>vscode.postMessage({type:'copy'});el('save').onclick=()=>
 
 function captureEditor(editor: vscode.TextEditor): SnapPayload {
   const document = editor.document;
-  const max = Math.max(10, Math.min(400, vscode.workspace.getConfiguration('codenote').get<number>('snap.maxLines', 160)));
+  const maxLines = Math.max(10, Math.min(400, vscode.workspace.getConfiguration('codenote').get<number>('snap.maxLines', 160)));
+
   let start = 0;
   let end = document.lineCount - 1;
-  let label = 'current file';
-  let partialSelection = false;
+  let sourceLabel = 'whole file';
 
   if (!editor.selection.isEmpty) {
     start = editor.selection.start.line;
     end = editor.selection.end.line;
     if (editor.selection.end.character === 0 && end > start) end -= 1;
-    label = `selection · L${start + 1}–${end + 1}`;
-    partialSelection = editor.selection.start.character !== 0 || editor.selection.end.character !== document.lineAt(editor.selection.end.line).range.end.character;
+    sourceLabel = start === end ? `selection · L${start + 1}` : `selection · L${start + 1}–${end + 1}`;
   } else if (editor.visibleRanges.length) {
     start = editor.visibleRanges[0].start.line;
     end = Math.min(document.lineCount - 1, editor.visibleRanges[0].end.line);
-    label = `visible editor · L${start + 1}–${end + 1}`;
+    sourceLabel = `visible editor · L${start + 1}–${end + 1}`;
   }
 
-  let lines: SnapLine[];
-  let rawCode: string;
+  let lines = visualLines(document, start, end);
 
-  if (partialSelection) {
-    rawCode = document.getText(editor.selection);
-    lines = rawCode.split(/\r?\n/).map((text, index) => ({ text, sourceLine: start + index + 1, kind: text.trim() ? 'code' : 'blank' }));
-  } else {
-    lines = visualSlice(document, start, end);
-    rawCode = Array.from({ length: end - start + 1 }, (_, index) => document.lineAt(start + index).text).join('\n');
+  if (!editor.selection.isEmpty && lines.length) {
+    const first = lines[0];
+    const last = lines[lines.length - 1];
+
+    if (first.kind === 'code' && editor.selection.start.character > 0) {
+      first.text = first.text.slice(editor.selection.start.character);
+    }
+
+    if (last.kind === 'code') {
+      const endCharacter = editor.selection.end.character;
+      const originalLength = document.lineAt(end).text.length;
+      if (endCharacter > 0 && endCharacter < originalLength) {
+        last.text = last.text.slice(0, Math.max(0, endCharacter - (start === end ? editor.selection.start.character : 0)));
+      }
+    }
   }
 
-  const truncated = lines.length > max;
+  const truncated = lines.length > maxLines;
   if (truncated) {
-    lines = [...lines.slice(0, max), { text: '…', sourceLine: Math.min(document.lineCount, start + max + 1), kind: 'meta' }];
+    lines = lines.slice(0, maxLines);
+    const sourceLine = lines.length ? lines[lines.length - 1].sourceLine + 1 : start + 1;
+    lines.push({ text: '…', sourceLine, kind: 'meta' });
   }
+
+  const rawCode = editor.selection.isEmpty
+    ? rangeText(document, start, end)
+    : document.getText(editor.selection);
 
   return {
     lines,
     rawCode,
     filename: path.basename(document.fileName || document.uri.path || 'CodeNote'),
     languageId: document.languageId,
-    sourceLabel: `${label} · visual notes`,
+    sourceLabel,
     truncated
   };
 }
 
-function visualSlice(document: vscode.TextDocument, start: number, end: number): SnapLine[] {
-  const lines: SnapLine[] = [];
+function rangeText(document: vscode.TextDocument, start: number, end: number): string {
+  if (!document.lineCount) return '';
+  const safeStart = Math.max(0, Math.min(start, document.lineCount - 1));
+  const safeEnd = Math.max(safeStart, Math.min(end, document.lineCount - 1));
+  const from = new vscode.Position(safeStart, 0);
+  const to = document.lineAt(safeEnd).range.end;
+  return document.getText(new vscode.Range(from, to));
+}
+
+function visualLines(document: vscode.TextDocument, start: number, end: number): SnapLine[] {
+  const result: SnapLine[] = [];
   for (let line = start; line <= end; line += 1) {
     const text = document.lineAt(line).text;
-    lines.push({ text, sourceLine: line + 1, kind: text.trim() ? 'code' : 'blank' });
+    result.push({ text, sourceLine: line + 1, kind: text.trim() ? 'code' : 'blank' });
   }
 
   const cfg = vscode.workspace.getConfiguration('codenote');
-  const boundaryStyle = cfg.get<string>('inlineBoundaryStyle', 'symbol');
-  const boundarySymbol = (cfg.get<string>('inlineBoundarySymbol', '◆') || '◆').slice(0, 12);
+  const style = cfg.get<string>('inlineBoundaryStyle', 'symbol');
+  const symbol = (cfg.get<string>('inlineBoundarySymbol', '◆') || '◆').slice(0, 12);
   const showKind = cfg.get<boolean>('inlineBoundaryLabel', false);
   const adapter = getLanguageAdapter(document.languageId);
 
@@ -199,115 +476,127 @@ function visualSlice(document: vscode.TextDocument, start: number, end: number):
     const blockStart = block.range.start.line;
     let blockEnd = block.range.end.line;
     if (block.range.end.character === 0 && blockEnd > blockStart) blockEnd -= 1;
+
     if (blockEnd < start || blockStart > end) continue;
 
-    for (let source = Math.max(start, blockStart); source <= Math.min(end, blockEnd); source += 1) {
-      const index = source - start;
-      const raw = document.lineAt(source).text;
+    const from = Math.max(start, blockStart);
+    const to = Math.min(end, blockEnd);
+
+    for (let line = from; line <= to; line += 1) {
+      const target = result[line - start];
+      if (!target) continue;
+
+      const raw = document.lineAt(line).text;
       const indent = raw.match(/^\s*/)?.[0] ?? '';
 
-      if (source === blockStart) {
-        lines[index] = { text: indent + boundaryText(true, boundaryStyle, boundarySymbol, showKind ? block.kind : undefined), sourceLine: source + 1, kind: 'boundary' };
-        continue;
-      }
-      if (source === blockEnd) {
-        lines[index] = { text: indent + boundaryText(false, boundaryStyle, boundarySymbol), sourceLine: source + 1, kind: 'boundary' };
+      if (line === blockStart) {
+        target.text = indent + boundary(true, style, symbol, showKind ? block.kind : undefined);
+        target.kind = 'boundary';
         continue;
       }
 
-      const visual = visualizeNoteLine(stripComment(raw, adapter?.comment), block.kind);
-      lines[index] = { text: indent + visual.text, sourceLine: source + 1, kind: visual.kind };
+      if (line === blockEnd) {
+        target.text = indent + boundary(false, style, symbol);
+        target.kind = 'boundary';
+        continue;
+      }
+
+      const visual = visualMarkdownLine(stripComment(raw, adapter?.comment));
+      target.text = indent + visual.text;
+      target.kind = visual.kind;
     }
   }
-  return lines;
+
+  return result;
 }
 
-function boundaryText(open: boolean, style: string, symbol: string, kind?: string): string {
+function boundary(open: boolean, style: string, symbol: string, kind?: string): string {
   if (style === 'none') return '';
-  if (style === 'line') return open ? `╭─${kind ? ` ${prettyKind(kind)}` : ''}` : '╰─';
-  return open ? `${symbol}${kind ? ` ${prettyKind(kind)}` : ''}` : symbol;
-}
-
-function prettyKind(kind: string): string {
-  return kind.replace(/(^|[-_])(\w)/g, (_m, _s, c: string) => c.toUpperCase());
+  if (style === 'line') return open ? `╭─${kind ? ` ${kind}` : ''}` : '╰─';
+  return open ? `${symbol}${kind ? ` ${kind}` : ''}` : symbol;
 }
 
 function stripComment(text: string, comment: any): string {
   let value = text.replace(/^\s+/, '');
+
   if (comment?.type === 'line') {
     const prefix = String(comment.prefix);
     if (value.startsWith(prefix)) value = value.slice(prefix.length).replace(/^\s?/, '');
-  } else {
-    value = value.replace(/^\*\s?/, '');
+    return value;
   }
-  return value;
+
+  return value.replace(/^\*\s?/, '');
 }
 
-function visualizeNoteLine(raw: string, noteKind: string): { text: string; kind: SnapLineKind } {
-  const trimmed = raw.trim();
+function visualMarkdownLine(raw: string): { text: string; kind: SnapLineKind } {
+  let value = raw.trimEnd();
+  const trimmed = value.trim();
+
   if (!trimmed) return { text: '', kind: 'blank' };
-  if (/^(id|title|tags|difficulty|status|created)\s*:/i.test(trimmed)) return { text: '', kind: 'blank' };
-  if (/^```/.test(trimmed)) return { text: '⋯', kind: 'meta' };
+  if (/^(id|title|tags|difficulty|status|created)\s*:/i.test(trimmed)) return { text: '', kind: 'meta' };
 
-  const heading = raw.match(/^\s*(#{1,6})\s+(.+)$/);
+  const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
   if (heading) {
-    const depth = heading[1].length;
-    return { text: decorateHeading(noteKind, cleanInlineMarkdown(heading[2])), kind: depth === 1 ? 'heading1' : depth === 2 ? 'heading2' : 'heading3' };
+    const level = heading[1].length;
+    return {
+      text: stripInlineMarkdown(heading[2]),
+      kind: level === 1 ? 'heading1' : level === 2 ? 'heading2' : 'heading3'
+    };
   }
 
-  const quote = raw.match(/^\s*>\s?(.*)$/);
-  if (quote) return { text: `│ ${cleanInlineMarkdown(quote[1])}`, kind: 'quote' };
-
-  const checkbox = raw.match(/^\s*[-+*]\s+\[([ xX])\]\s+(.+)$/);
-  if (checkbox) return { text: `${checkbox[1].trim() ? '✓' : '□'}  ${cleanInlineMarkdown(checkbox[2])}`, kind: 'note' };
-
-  const bullet = raw.match(/^\s*[-+*]\s+(.+)$/);
-  if (bullet) return { text: `•  ${cleanInlineMarkdown(bullet[1])}`, kind: 'note' };
-
-  const numbered = raw.match(/^\s*(\d+[.)])\s+(.+)$/);
-  if (numbered) return { text: `${numbered[1]}  ${cleanInlineMarkdown(numbered[2])}`, kind: 'note' };
-
-  const labeled = raw.match(/^\s*(question|answer|time|space)\s*:\s*(.*)$/i);
-  if (labeled) {
-    const label = labeled[1][0].toUpperCase() + labeled[1].slice(1).toLowerCase();
-    return { text: `${label} · ${cleanInlineMarkdown(labeled[2])}`, kind: labeled[1].toLowerCase() === 'question' ? 'heading3' : 'note' };
+  if (/^>\s?/.test(trimmed)) {
+    return { text: `│ ${stripInlineMarkdown(trimmed.replace(/^>\s?/, ''))}`, kind: 'quote' };
   }
 
-  return { text: cleanInlineMarkdown(raw), kind: noteKind === 'warning' ? 'warning' : 'note' };
+  const checkbox = trimmed.match(/^[-+*]\s+\[([ xX])\]\s+(.+)$/);
+  if (checkbox) {
+    return { text: `${checkbox[1].trim() ? '✓' : '□'}  ${stripInlineMarkdown(checkbox[2])}`, kind: 'note' };
+  }
+
+  const bullet = trimmed.match(/^[-+*]\s+(.+)$/);
+  if (bullet) return { text: `•  ${stripInlineMarkdown(bullet[1])}`, kind: 'note' };
+
+  const question = trimmed.match(/^question\s*:\s*(.*)$/i);
+  if (question) return { text: `Question · ${stripInlineMarkdown(question[1])}`, kind: 'note' };
+
+  const answer = trimmed.match(/^answer\s*:\s*(.*)$/i);
+  if (answer) return { text: `Answer · ${stripInlineMarkdown(answer[1])}`, kind: 'meta' };
+
+  if (/^(warning|watch out|important)\s*:/i.test(trimmed)) {
+    return { text: stripInlineMarkdown(trimmed), kind: 'warning' };
+  }
+
+  value = stripInlineMarkdown(value);
+  return { text: value, kind: 'note' };
 }
 
-function decorateHeading(kind: string, text: string): string {
-  if (kind === 'warning') return `⚠ ${text}`;
-  if (kind === 'tip') return `→ ${text}`;
-  if (kind === 'checkpoint') return `✓ ${text}`;
-  return text;
-}
-
-function cleanInlineMarkdown(value: string): string {
+function stripInlineMarkdown(value: string): string {
   return value
-    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/__([^_]+)__/g, '$1')
-    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '$1')
-    .replace(/(?<!_)_([^_]+)_(?!_)/g, '$1')
     .replace(/~~([^~]+)~~/g, '$1')
-    .replace(/\\([\\`*_{}\[\]()#+\-.!>])/g, '$1')
-    .trimEnd();
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '$1')
+    .replace(/(?<!_)_([^_]+)_(?!_)/g, '$1');
 }
 
 async function savePng(dataUrl: string, filename: string): Promise<void> {
   const match = dataUrl.match(/^data:image\/png;base64,(.+)$/);
-  if (!match) return void vscode.window.showErrorMessage('Could not create PNG.');
+  if (!match) {
+    vscode.window.showErrorMessage('Could not create PNG.');
+    return;
+  }
+
   const folder = vscode.workspace.workspaceFolders?.[0]?.uri;
-  const name = filename.toLowerCase().endsWith('.png') ? filename : `${filename}.png`;
+  const safeName = filename.toLowerCase().endsWith('.png') ? filename : `${filename}.png`;
   const target = await vscode.window.showSaveDialog({
-    defaultUri: folder ? vscode.Uri.joinPath(folder, name) : undefined,
+    defaultUri: folder ? vscode.Uri.joinPath(folder, safeName) : undefined,
     filters: { PNG: ['png'] },
     saveLabel: 'Save Code Snap'
   });
+
   if (!target) return;
+
   await vscode.workspace.fs.writeFile(target, Buffer.from(match[1], 'base64'));
   const action = await vscode.window.showInformationMessage(`Saved ${path.basename(target.fsPath)}`, 'Open Image');
   if (action === 'Open Image') await vscode.commands.executeCommand('vscode.open', target);
