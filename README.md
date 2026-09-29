@@ -12,6 +12,16 @@
 
 ---
 
+## download here 👇
+
+<p align="center">
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.0.vsix"><b>👇 Download .cnote 6.2.0 in one click ⚡</b></a><br>
+  <sub>VS Code → Extensions → … → Install from VSIX…</sub>
+</p>
+
+---
+
 ## `// todo: understand this later` — bro, it’s later 😭
 
 The explanation is in another tab. The screenshot is somewhere in Downloads. Future you is fighting for their life.
