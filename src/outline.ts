@@ -53,7 +53,7 @@ export class CodeNoteOutlineProvider implements vscode.TreeDataProvider<Node>, v
       `Type: \`${block.kind}\`  \nFile: \`${escapeMarkdown(indexed.relativePath)}\`  \nLine: ${block.range.start.line + 1}` +
       (block.metadata.tags.length ? `  \nTags: ${block.metadata.tags.map(tag => `\`${escapeMarkdown(tag)}\``).join(' ')}` : '')
     );
-    item.command = { command: 'codenote.revealBlock', title: 'Reveal CodeNote', arguments: [indexed.uri, block.startOffset] };
+    item.command = { command: 'codenote.revealBlock', title: 'Reveal .cnote', arguments: [indexed.uri, block.startOffset] };
     item.contextValue = `codenote.${block.kind}`;
     return item;
   }
@@ -64,10 +64,10 @@ export class CodeNoteOutlineProvider implements vscode.TreeDataProvider<Node>, v
       const currentCount = active ? parseNoteBlocks(active).length : 0;
       const due = this.index.all().filter(note => this.review.isDue(note.uri, note.block)).length;
       return [
-        { type: 'root', id: 'current', label: 'Current File', count: currentCount },
-        { type: 'root', id: 'workspace', label: 'Workspace Notes', count: this.index.count() },
-        { type: 'root', id: 'tags', label: 'Tags', count: this.index.tags().length },
-        { type: 'root', id: 'review', label: 'Review Due', count: due }
+        { type: 'root', id: 'current', label: 'This File', count: currentCount },
+        { type: 'root', id: 'workspace', label: 'Workspace', count: this.index.count() },
+        { type: 'root', id: 'review', label: 'Review', count: due },
+        { type: 'root', id: 'tags', label: 'Tags', count: this.index.tags().length }
       ];
     }
 
