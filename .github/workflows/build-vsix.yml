@@ -48,7 +48,7 @@ jobs:
           text = re.sub(r'<img\b[^>]*\.svg[^>]*>', '', text, flags=re.I)
           p.write_text(text, encoding='utf-8')
           PY
-          npx vsce package -o downloads/codenote-6.0.0.vsix
+          npx vsce package -o downloads/codenote-6.1.0.vsix
           cp /tmp/README.github.md README.md
 
       - name: Publish installable VSIX to repository
@@ -56,10 +56,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -- README.md package-lock.json 2>/dev/null || true
-          git add -f downloads/codenote-6.0.0.vsix
+          git add -f downloads/codenote-6.1.0.vsix
           if git diff --cached --quiet; then
             echo "VSIX unchanged"
           else
-            git commit -m "Build .cnote 6.0.0 VSIX"
+            git commit -m "Build .cnote 6.1.0 VSIX"
             git push
           fi
