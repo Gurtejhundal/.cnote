@@ -1,0 +1,53 @@
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'script.js'
+      - 'assets/**'
+      - 'media/readme/upi-qr.svg'
+      - 'downloads/**'
+      - '.github/workflows/pages.yml'
+  workflow_run:
+    workflows: ['Build VSIX']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - name: Stage the static website
+        run: |
+          mkdir -p _site/media/readme
+          cp index.html styles.css script.js _site/
+          cp -R assets downloads _site/
+          cp media/readme/upi-qr.svg _site/media/readme/
+          rm _site/assets/README.md
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,243 +1,138 @@
-<p align="center">
-  <img src="media/readme/logo.svg" alt=".cnote" width="620" />
-</p>
+<p align="center"><img src="assets/readme-banner.svg" alt=".cnote — your comments got an upgrade. Code, annotate, actually remember it." width="100%"></p>
 
-<p align="center"><b>Write code like notes — without leaving your real source file.</b></p>
+<p align="center"><b>your code is cooking. your notes should be too. ✨</b><br>Markdown-style study notes inside real source comments. Same file. Way less brain fog.</p>
 
 <p align="center">
-  Inline visual Markdown · Notebook · Review · PDF export · Snap Studio · Workspace notes
+  <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.1.1.vsix"><b>⬇ grab .cnote 6.1.1</b></a> &nbsp; · &nbsp;
+  <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
-<p align="center">
-  <a href="downloads/codenote-6.1.1.vsix"><b>⬇ Download .cnote 6.1.1 for VS Code</b></a>
-</p>
-
-## Support the project 🎮
-
-.cnote is free and open source. If it saves you time, helps you learn, or makes your code notes less ugly, you can support the project.
-
-<p align="center">
-  <img src="media/readme/upi-qr.svg" alt="UPI QR for Gurtejbir Singh" width="330" />
-</p>
-
-<p align="center"><b>Buy me a PS5 🥺🎮</b><br/>No pressure. Every small contribution helps me keep building weirdly useful stuff.</p>
+<p align="center"><code>VS Code ≥ 1.90</code> &nbsp; <code>MIT licensed</code> &nbsp; <code>no account</code> &nbsp; <code>local editor features</code></p>
 
 ---
 
-## What .cnote does
+## `// todo: understand this later` — bro, it’s later 😭
 
-.cnote lets you write Markdown-style notes inside legal comments in normal source files. When your caret leaves the note, the Markdown syntax becomes a clean visual note **inside the same editor**. Click back into it and the real source returns for editing.
+The explanation is in another tab. The screenshot is somewhere in Downloads. Future you is fighting for their life.
 
-Your file stays `.cpp`, `.py`, `.java`, `.js`, `.ts`, `.go`, `.rs`, and so on. Compilers, Git, IntelliSense and debuggers still see ordinary source code.
+**.cnote keeps the notes with the code.** Write a legal source comment. Move your cursor out. It becomes a clean visual note in the same editor. Click back in to edit the real source.
 
-### Raw source → inline visual note
+Your `.cpp` stays `.cpp`. Your `.py` stays `.py`. Git, compilers, IntelliSense, and debuggers still see ordinary source comments.
+
+## the before → after goes hard
 
 <table>
-<tr><th>While editing</th><th>When you return to code</th></tr>
-<tr><td><img src="media/readme/raw-note.svg" width="420" /></td><td><img src="media/readme/visual-note.svg" width="420" /></td></tr>
+  <tr><th>✍️ while you’re writing</th><th>✨ when you get back to code</th></tr>
+  <tr><td><img src="assets/raw-note.png" alt="Actual VS Code screenshot of raw definition and quiz comments in website-demo.cpp" width="460"></td><td><img src="assets/visual-note.png" alt="The exact same source rendered by .cnote, with unchanged physical line numbers" width="460"></td></tr>
 </table>
 
-V6 keeps the **same physical line count** in both states. The comment opener and closer become configurable boundary markers instead of disappearing, so diagnostics and breakpoints do not feel shifted.
+Actual extension captures. [Exact same sample](sample/website-demo.cpp). **Same physical line count in both states.** The opener and closer become configurable boundary markers, so your breakpoints keep their place.
 
-## V6.1 editor workflow
+## okay, what’s in the box? 👀
 
-The editor title is intentionally small now. `.cnote` only adds three quick actions:
+| Your situation | .cnote’s move |
+| --- | --- |
+| “these comments are a wall of text” | Headings, lists, code, checkboxes, quotes, and question/answer fields |
+| “exam tomorrow, vibes today” | **Notebook:** code + notes in source order, filters, quizzes, checkpoints |
+| “i definitely knew this yesterday” | **Review:** Again / Hard / Good / Easy, plus due-quiz review |
+| “where did i explain binary search?” | **Workspace notebook:** search, tags, stats, and reindexing |
+| “let me send you my notes” | **Markdown exports** for file/workspace notes; **PDF** for Notebook |
+| “this code deserves a photoshoot” | **Snap Studio:** eight templates, visual notes, 2× PNG output |
+| “i just want to run this” | **Run Current File** using your installed runtime/compiler |
+| “my editor, my rules” | Visual mode, labels, tags, boundaries, render delay, and Snap defaults |
 
-- **Note** — insert a note
-- **Snap** — open Snap Studio
-- **.cnote** — open the compact action menu
-
-The `.cnote` menu contains:
-
-- **Notebook** — read code + notes from the current file
-- **Review** — open due quizzes and checkpoints
-- **Find Notes** — search the workspace
-- **Export PDF**
-- **Workspace Stats**
-- **Settings**
-
-`.cnote` no longer adds a Run button to the editor title, so it does not compete with the Run action from C/C++, Python or other language extensions.
-
-Keyboard shortcuts remain optional:
-
-| Action | Windows/Linux | macOS |
-|---|---|---|
-| Insert note | `Ctrl + Shift + F6` | `Cmd + Shift + F6` |
-| Notebook | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
-| Snap Studio | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
-
-## Markdown that works inline
-
-Write normal Markdown inside a CodeNote block. .cnote removes the syntax in visual mode and keeps the meaning.
-
-| You write | Visual result |
-|---|---|
-| `# Vectors` | **Vectors** — large heading |
-| `## Vector operations` | **Vector operations** — medium heading |
-| `### push_back()` | **push_back()** — small heading |
-| `**dynamic array**` | **dynamic array** |
-| `*important*` | *important* |
-| `` `O(1)` `` | `O(1)` |
-| `- push_back()` | `• push_back()` |
-| `- [ ] revise vectors` | `□ revise vectors` |
-| `- [x] arrays done` | `✓ arrays done` |
-| `> remember this` | `│ remember this` |
-| `question: What is size()?` | **Question · What is size()?** |
-| `answer: number of elements` | `Answer · number of elements` |
-
-Example:
-
-```cpp
-#include <vector>
-using namespace std;
-
-/* @definition
-# Vectors
-Vectors are **dynamic arrays**.
-*/
-
-int main() {
-    vector<int> v = {10, 20, 30};
-}
-```
-
-## Note types
-
-Use the type that matches what you are writing:
+### notes with range
 
 `@paragraph` · `@note` · `@section` · `@definition` · `@warning` · `@complexity` · `@quiz` · `@checkpoint` · `@tip` · `@example` · `@todo`
 
-Example quiz:
-
 ```cpp
+/* @complexity
+# Binary search
+Time: `O(log n)`
+Space: `O(1)`
+*/
+
 /* @quiz
-question: What is the last index when size is 10?
-answer: 9
+question: Last valid index when size is 10?
+answer: `9`. Zero-based indexing, bestie.
 */
 ```
 
-## Same-line-count inline mode
+Headings, `**bold**`, `*italic*`, inline code, bullets, checkboxes, and `> quotes` work in note content. Notebook renders rich formatting; inline mode cleans Markdown markers into readable lines.
 
-This source:
+### academic comeback mode 🧠
 
-```text
-/* @note
-# Vectors
-Vectors are dynamic arrays.
-*/
-```
+<img src="assets/study-mode.png" alt="Real Notebook with note navigation, source code, a definition, and revealed quiz with review buttons" width="100%">
 
-still occupies four visible rows in inline mode:
+Read in order. Filter the noise. Reveal the answer. Grade your recall. Jump back to the exact source location. Export when you’re done.
 
-```text
-◆
-Vectors
-Vectors are dynamic arrays.
-◆
-```
+### screenshot it like you mean it 📸
 
-The boundary is customizable in **.cnote Settings**:
+<img src="assets/snap-studio.png" alt="Actual Snap Studio with eight templates, code-image preview, design controls, and Save PNG" width="100%">
 
-- `◆`
-- `✦`
-- `●`
-- `▸`
-- `📘`
-- any short custom symbol
-- line style: `╭─` / `╰─`
-- no marker
+**Aurora · Midnight · Sunset · Forest · Paper · Minimal · Ocean · Lavender**
 
-You can also show the note type beside the opening marker.
+Select code or capture the visible editor. Set width, spacing, font size, line numbers, window dots, and branding. Save a 2× PNG. Your choices stick around between sessions.
 
-## Snap Studio
+[Try all eight actual exported samples on the website →](https://gurtejhundal.github.io/.cnote/#snap)
 
-Select code, or leave nothing selected to capture the visible editor, then open **Snap**.
+## ctrl. shift. cook. ⚡
 
-<p align="center"><img src="media/readme/snap-studio.svg" alt=".cnote Snap Studio" width="860" /></p>
+| Action | Windows / Linux | macOS |
+| --- | --- | --- |
+| Insert Note | `Ctrl + Shift + F6` | `Cmd + Shift + F6` |
+| Open Notebook | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
+| Run Current File | `Ctrl + Shift + F8` | `Cmd + Shift + F8` |
+| Snap Code | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
 
-V6.1 changes Snap into a preview-first workflow:
+More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. All 15 commands are in the VS Code Command Palette; [search the command list here](https://gurtejhundal.github.io/.cnote/#shortcuts).
 
-- the code preview is visible immediately when Snap opens
-- visual `.cnote` notes are rendered in the preview instead of raw `/* @note ... */` syntax
-- **Save PNG** stays pinned at the top-right
-- templates are a compact horizontal strip
-- advanced controls stay out of the way until needed
-- template, width, spacing, font size, line numbers, window dots and branding are remembered between sessions
-- 8 built-in templates: Aurora, Midnight, Sunset, Forest, Paper, Minimal, Ocean and Lavender
-- 2× PNG export
+“Explain Selected Code” inserts a note template **for you to fill in**. It does not generate an AI explanation.
 
-## Notebook
+## your language can come too
 
-Notebook is the reading/navigation view for annotated files. It keeps normal code and visual notes in source order without positioning `.cnote` as a student-only feature.
+C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CSS / C# / Swift / Kotlin / and [the full lineup](https://gurtejhundal.github.io/.cnote/#languages).
 
-Features include:
+.cnote uses each supported language’s native comment syntax. **Plain JSON is intentionally unsupported** because it doesn’t allow comments. Use JSONC. The authoritative list lives in [`src/languageAdapters.ts`](src/languageAdapters.ts).
 
-- note filtering and navigation
-- quizzes and checkpoints
-- `Again / Hard / Good / Easy` review state
-- Markdown export
-- PDF export
-- jump back to exact source location
-- workspace note search and tags
+## three steps. you’re in.
 
-The `.cnote` Activity Bar also acts as the primary notebook index:
+1. [Download **codenote-6.1.1.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.1.1.vsix).
+2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
+3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 
-- **This File**
-- **Workspace**
-- **Review**
-- **Tags**
+No Marketplace listing is required. This is a direct VSIX install.
 
-## Settings panel
+## fork it. break it. improve it. 🛠️
 
-Open **.cnote → Settings** from the editor toolbar menu, use the Notebook sidebar gear, or run `CodeNote: Settings`.
-
-You can change:
-
-- automatic inline visual mode
-- kind labels
-- tags
-- render delay
-- note boundary style
-- custom boundary symbol
-- boundary type label
-- Snap default template
-- Snap line numbers
-- Snap branding
-
-Settings are stored in VS Code user settings. Snap Studio's live design choices are also remembered automatically.
-
-## Branding
-
-V6.1.1 adds the dedicated `.cnote` app icon used by VS Code's Extensions view and Marketplace package. Release builds generate and package the PNG automatically so local installs and published builds use the same identity.
-
-Publisher metadata now uses `gurtejhundal` instead of the temporary `local-dev` identifier.
-
-## Language support
-
-.cnote uses native comment syntax for supported languages. C/C++/Java/JavaScript/TypeScript/Go/Rust use block comments, Python/Ruby/Shell/YAML use line-comment blocks, HTML/XML use HTML comments, and many more VS Code language IDs are supported.
-
-Plain JSON is intentionally not supported because JSON has no legal comments. Use JSONC when you need annotations.
-
-## Install
-
-1. [Download `codenote-6.1.1.vsix`](downloads/codenote-6.1.1.vsix).
-2. Open VS Code.
-3. Open **Extensions**.
-4. Click `…` → **Install from VSIX…**.
-5. Choose the file and reload VS Code.
-
-## Repository structure
+Found something chopped? [Open an issue](https://github.com/Gurtejhundal/.cnote/issues). Want to help? Fix a bug, improve a note renderer, or add a safe language adapter.
 
 ```text
-src/        TypeScript source
-out/        compiled extension
-media/      icon and README assets
-scripts/    deterministic release asset generators
-sample/     example annotated source files
+src/                  VS Code extension source (TypeScript)
+sample/               annotated source examples
+downloads/            installable .vsix
+index.html            static product website
+styles.css, script.js  website styles and vanilla interactions
+assets/               real captures, font, and website artwork
+scripts/              runnable regression checks
+.github/workflows/    VSIX packaging + GitHub Pages deployment
 ```
 
-## License
+**Extension:** `npm ci` → `npm run compile` → `node scripts/check-webviews.cjs`. Launch this repository as a VS Code Extension Development Host to try it.
 
-MIT
+**Website:** open `index.html`, or serve the repository with `python -m http.server 4173` for clipboard support on localhost. No website dependencies or build step. [`design.md`](design.md) records the design rules; [`assets/README.md`](assets/README.md) records screenshot provenance.
 
-<p align="center"><b>.cnote</b> — code · note · learn · share</p>
+The Pages workflow publishes the website and download on `main` updates. Website assets and local build briefs are excluded from the VSIX. [Full setup and deployment notes](CONTRIBUTING.md).
+
+## the extension is free. the PS5 is not. 🎮
+
+<p align="center"><a href="https://gurtejhundal.github.io/.cnote/#support"><img src="assets/support.gif" alt="Animated controller for the optional PS5 fund. The extension stays free; support is optional." width="900"></a></p>
+
+If .cnote saves you a little brain power, you can help fuel the next update. Or the very ambitious console fund. **No paywall. No guilt trip.**
+
+<p align="center"><img src="media/readme/upi-qr.svg" alt="UPI donation QR for Gurtejbir Singh, unchanged from the original repository" width="200"><br><b>Scan with a UPI app · any amount helps.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>
+
+---
+
+<p align="center"><b>.cnote</b> — code. note. learn. repeat.<br><sub>Made by Gurtejbir Singh · <a href="LICENSE">MIT licensed</a></sub></p>

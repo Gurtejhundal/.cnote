@@ -3,3 +3,15 @@ src/**
 node_modules/**
 *.vsix
 .gitignore
+index.html
+styles.css
+script.js
+design.md
+CONTRIBUTING.md
+assets/**
+scripts/**
+mds/**
+output/**
+.github/**
+.playwright-cli/**
+downloads/**

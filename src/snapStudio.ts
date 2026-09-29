@@ -90,7 +90,7 @@ export class SnapStudioManager implements vscode.Disposable {
     const data = JSON.stringify({ ...payload, initial }).replace(/</g, '\\u003c');
     const nonce = createNonce();
 
-    return `<!doctype html>
+    return String.raw`<!doctype html>
 <html>
 <head>
 <meta charset="UTF-8">

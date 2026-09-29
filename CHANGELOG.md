@@ -32,6 +32,8 @@
 - Snap Studio now remembers template, spacing, width, font size and toggles across sessions.
 - Moved Save PNG to a persistent top toolbar in Snap Studio.
 - Snap Studio now converts CodeNote Markdown comments to visual note text before capture.
+- Fixed Snap Studio rendering after webview script generation.
+- Added the public static website with real comparison screenshots and installable VSIX download.
 - Added clean README documentation with Markdown comparison tables, screenshots, logo and donation QR.
 - Preserved Study Mode, review, PDF export, workspace indexing and multi-language comment adapters.
 

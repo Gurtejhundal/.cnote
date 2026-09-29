@@ -10,7 +10,7 @@
   "galleryBanner": {"color": "#0B0D10", "theme": "dark"},
   "pricing": "Free",
   "repository": {"type": "git", "url": "https://github.com/Gurtejhundal/.cnote.git"},
-  "homepage": "https://github.com/Gurtejhundal/.cnote",
+  "homepage": "https://gurtejhundal.github.io/.cnote/",
   "bugs": {"url": "https://github.com/Gurtejhundal/.cnote/issues"},
   "engines": {"vscode": "^1.90.0"},
   "categories": ["Programming Languages", "Education", "Notebooks"],

@@ -33,10 +33,13 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Compile
         run: npm run compile
+
+      - name: Check generated webview scripts
+        run: node scripts/check-webviews.cjs
 
       - name: Package VSIX
         run: |
