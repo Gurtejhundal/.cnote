@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.2.3
+- Use the approved website logo as the VS Code extension icon and release asset icon.
+
 ## 6.2.2
 - Fix inline visual note boundaries so @note headings do not show duplicate sparkle markers.
 - Align Snap Studio preview sizing with the PNG export layout.
