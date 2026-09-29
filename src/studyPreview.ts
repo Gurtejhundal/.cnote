@@ -30,13 +30,13 @@ export class StudyPreviewManager implements vscode.Disposable {
     this.boundDocumentUri = document.uri.toString();
     this.focusOffset = focusOffset;
     if (!this.panel) {
-      this.panel = vscode.window.createWebviewPanel('codenoteStudy', 'CodeNote Study', vscode.ViewColumn.Beside, { enableScripts: true, retainContextWhenHidden: true });
+      this.panel = vscode.window.createWebviewPanel('codenoteNotebook', '.cnote Notebook', vscode.ViewColumn.Beside, { enableScripts: true, retainContextWhenHidden: true });
       this.panel.onDidDispose(() => { this.panel = undefined; this.boundDocumentUri = undefined; });
       this.panel.webview.onDidReceiveMessage(async message => this.handleMessage(message));
     } else {
       this.panel.reveal(vscode.ViewColumn.Beside, true);
     }
-    this.panel.title = `Study · ${path.basename(document.fileName)}`;
+    this.panel.title = `Notebook · ${path.basename(document.fileName)}`;
     this.render(document);
   }
 
@@ -103,8 +103,8 @@ main{max-width:1000px;width:100%;padding:22px 28px;margin:0 auto}.code-part{marg
 .card-actions,.rating{margin-top:12px;display:flex;gap:7px;flex-wrap:wrap}.rating button{font-size:11px}.answer{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--vscode-panel-border)}.inline-code{background:var(--vscode-textCodeBlock-background);padding:1px 4px;border-radius:3px;font-family:var(--vscode-editor-font-family)}blockquote{margin:10px 0;padding:2px 12px;border-left:3px solid var(--vscode-textBlockQuote-border);opacity:.9}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.8em 0 .35em}p{margin:.55em 0}ul,ol{margin:.5em 0;padding-left:1.5rem}hr{border:0;border-top:1px solid var(--vscode-panel-border)}body.hide-code .code-part{display:none}.empty{opacity:.7;padding:30px;text-align:center}
 @media(max-width:760px){.layout{grid-template-columns:1fr}aside{display:none}main{padding:16px}.topbar{position:sticky}.search{max-width:none}}
 </style></head><body>
-<div class="topbar"><div class="brand">.cnote 6</div><span class="meta">${escapeHtml(path.basename(document.fileName))} · ${blocks.length} notes · ${dueCount} due</span><input id="search" class="search" placeholder="Search this file…"><select id="kind" class="select">${kindOptions}</select><label class="toggle"><input id="toggle-code" type="checkbox" checked>Code</label><button class="secondary" id="pdf">PDF</button><button class="secondary" id="export">Markdown</button></div>
-<div class="layout"><aside><div class="aside-title">Contents</div>${toc || '<div class="meta">No notes yet</div>'}</aside><main>${content || '<div class="empty">No CodeNote blocks in this file yet.</div>'}</main></div>
+<div class="topbar"><div class="brand">.cnote Notebook</div><span class="meta">${escapeHtml(path.basename(document.fileName))} · ${blocks.length} notes · ${dueCount} due</span><input id="search" class="search" placeholder="Find in this file…"><select id="kind" class="select">${kindOptions}</select><label class="toggle"><input id="toggle-code" type="checkbox" checked>Code</label><button class="secondary" id="pdf">PDF</button><button class="secondary" id="export">Markdown</button></div>
+<div class="layout"><aside><div class="aside-title">This file</div>${toc || '<div class="meta">No notes yet</div>'}</aside><main>${content || '<div class="empty">No .cnote blocks in this file yet.</div>'}</main></div>
 <script nonce="${nonce}">
 const vscode=acquireVsCodeApi();const saved=vscode.getState()||{showCode:true,query:'',kind:'all'};const search=document.getElementById('search');const kind=document.getElementById('kind');const toggle=document.getElementById('toggle-code');
 function apply(){const q=(search?.value||'').toLowerCase();const k=kind?.value||'all';document.body.classList.toggle('hide-code',!(toggle?.checked??true));document.querySelectorAll('.card').forEach(card=>{const okQ=!q||(card.getAttribute('data-search')||'').includes(q);const okK=k==='all'||card.getAttribute('data-kind')===k;card.classList.toggle('hidden',!(okQ&&okK));});vscode.setState({showCode:toggle?.checked??true,query:search?.value||'',kind:k});}
