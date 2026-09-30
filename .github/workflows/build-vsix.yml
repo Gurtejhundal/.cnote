@@ -66,35 +66,25 @@ jobs:
 
           p = Path('README.md')
           text = p.read_text(encoding='utf-8')
+          version = os.environ['CN_VERSION']
 
-          # VS Marketplace strips/blocks SVG images in extension READMEs, so
-          # keep only raster assets inside the packaged listing.
+          # Keep the Marketplace README in sync with the actual package version.
+          text = re.sub(r'codenote-\d+\.\d+\.\d+\.vsix', f'codenote-{version}.vsix', text)
+          text = re.sub(r'\.cnote \d+\.\d+\.\d+', f'.cnote {version}', text)
+
+          old = '''<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>'''
+          new = '''<p align="center">
+  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/crying-waterfall.png" alt="Crying waterfall emoji" width="120"><br>
+  <b>if .cnote saved your brain cells... help me buy a PS5 😭🎮</b><br>
+  <sub>absolutely optional. no paywall. no guilt trip. just the side quest.</sub><br><br>
+  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/upi-qr-marketplace.png" alt="UPI QR code for optional .cnote support" width="280"><br>
+  <b>scan with any UPI app</b><br>
+  <sub>Gurtejbir Singh · A GitHub star is love too.</sub>
+</p>'''
+          text = text.replace(old, new)
+
+          # Marketplace packaging is stricter around SVG images in README content.
           text = re.sub(r'<img\b[^>]*\.svg[^>]*>', '', text, flags=re.I)
-
-          # Always show the packaged version in Marketplace even when the
-          # repository README still points at the previous direct-download file.
-          version = os.environ.get('CN_VERSION', '').strip()
-          if version:
-              text = re.sub(r'6\.3\.0', version, text)
-
-          old_support = '<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>'
-          new_support = '''<p align="center">
-            <img src="media/readme/crying-waterfall.png" alt="Crying face for the very serious PS5 side quest" width="110"><br>
-            <b>help me buy a PS5 😭🎮</b><br>
-            <sub>the extension is free. my console fund is fighting for its life.</sub>
-          </p>
-
-          <p align="center">
-            <img src="media/readme/upi-qr.png" alt="UPI payment QR for Gurtejbir Singh" width="220"><br>
-            <b>Scan with any UPI app</b><br>
-            <sub>Gurtejbir Singh · UPI: gurtejbir.29107@okhdfcbank · totally optional 💚</sub>
-          </p>'''
-
-          if old_support in text:
-              text = text.replace(old_support, new_support)
-          else:
-              text += '\n\n' + new_support + '\n'
-
           p.write_text(text, encoding='utf-8')
           PY
           npx vsce package -o "downloads/codenote-${CN_VERSION}.vsix"

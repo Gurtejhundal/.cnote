@@ -1,1 +1,0 @@
-Binary assets are uploaded through Git blobs in the next commit.
