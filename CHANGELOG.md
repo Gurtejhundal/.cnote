@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.2.7
+- Rebuild Snap Studio around fixed source rows so preview spacing matches the exported PNG.
+- Scale the full preview card to fit narrow panels without wrapping or cropping.
+- Re-read selections on every Snap invocation and add regressions for selection, visible-range, visual notes, row count, and preview layout.
+
 ## 6.2.6
 - Make the normal Note insert use the compact one-line form so plain text notes do not create opener/closer marker rows.
 - Fix single-line line-comment notes so the parser treats them as exactly one editor line.

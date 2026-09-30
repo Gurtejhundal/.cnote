@@ -65,10 +65,11 @@ function selection(startLine, startCharacter, endLine, endCharacter) {
   return { start: new Position(startLine, startCharacter), end: new Position(endLine, endCharacter), isEmpty: startLine === endLine && startCharacter === endCharacter };
 }
 
-function capture(document, sel, visibleStart = 0, visibleEnd = document.lineCount - 1) {
+function capture(document, sel, visibleStart = 0, visibleEnd = document.lineCount - 1, selections) {
   return load('snapStudio.js').__test.captureEditor({
     document,
     selection: sel,
+    selections: selections || [sel],
     visibleRanges: [{ start: new Position(visibleStart, 0), end: new Position(visibleEnd, 0) }]
   });
 }
@@ -112,4 +113,34 @@ assert.ok(snap.lines.some(line => line.text === '-- one line --'));
 assert.ok(!snap.lines.some(line => /@section|@note|\/\*|\*\//.test(line.text)));
 
 assert.ok(snap.lines.some(line => line.kind === 'blank') || source.includes('\n\n') === false);
+
+// Selection overrides visible range.
+snap = capture(document, selection(10, 0, 10, document.lineAt(10).text.length), 0, 4);
+assert.equal(JSON.stringify(snap.lines.map(line => line.text)), JSON.stringify(['return 0;']));
+assert.equal(snap.sourceLabel, 'selection · L11');
+
+// Reopening Snap must re-read current editor state instead of keeping stale capture data.
+const snapFirstOpen = capture(document, selection(0, 0, 0, 0), 0, 2);
+const snapSecondOpen = capture(document, selection(3, 4, 3, 9), 0, 2);
+assert.equal(JSON.stringify(snapFirstOpen.lines.map(line => line.sourceLine)), JSON.stringify([1, 2, 3]));
+assert.equal(JSON.stringify(snapSecondOpen.lines.map(line => line.text)), JSON.stringify(['a = 1']));
+assert.equal(snapSecondOpen.rawCode, 'a = 1');
+
+// Non-primary selections still count as selection input.
+snap = capture(document, selection(0, 0, 0, 0), 0, 2, [selection(0, 0, 0, 0), selection(4, 4, 4, 9)]);
+assert.equal(JSON.stringify(snap.lines.map(line => line.text)), JSON.stringify(['b = 2']));
+
+// One physical source line creates one render row; blank lines stay single rows.
+const blankDoc = doc(['int x;', '', 'int y;'].join('\n'));
+snap = capture(blankDoc, selection(0, 0, 0, 0), 0, 2);
+assert.equal(snap.lines.length, 3);
+assert.equal(JSON.stringify(snap.lines.map(line => line.kind)), JSON.stringify(['code', 'blank', 'code']));
+assert.ok(snap.lines.every(line => line.type === line.kind));
+assert.ok(snap.lines.every(line => typeof line.indent === 'number'));
+
+// Visual note lines should not leak raw .cnote syntax or duplicate semantic glyphs.
+snap = capture(document, selection(6, 0, 10, 0));
+assert.equal(JSON.stringify(snap.lines.map(line => line.text)), JSON.stringify(['◆', 'display', 'it will display array', '◆']));
+assert.ok(!snap.lines.some(line => /◆\s+✦|✦\s+display/.test(line.text)));
+
 console.log('Snap capture regression checks pass.');

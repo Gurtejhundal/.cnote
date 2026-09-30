@@ -2,7 +2,7 @@
   "name": "codenote",
   "displayName": ".cnote",
   "description": "Write visual Markdown notes inside real source files, browse them in Notebook, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "6.2.6",
+  "version": "6.2.7",
   "publisher": "gurtejhundal",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
