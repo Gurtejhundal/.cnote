@@ -67,6 +67,12 @@ assert.ok(html.includes('layoutMetrics(state, lineCount)'), 'Preview and PNG mus
 assert.ok(html.includes('overflow-x:auto;overflow-y:visible'), 'Preview must use horizontal scrolling instead of height-fit shrinking');
 assert.ok(html.includes('const previewScale = 1'), 'Preview must keep the configured image size');
 assert.ok(html.includes("code.style.setProperty('--ln-size', m.fontSize + 'px')"), 'Line numbers must match source font size');
+assert.match(html, /<div class="code-row code"><span class="ln">4<\/span><span class="txt">/, 'Line number and source text must be children of the same row');
+assert.ok(html.includes('min-height:var(--row-h,24px);max-height:var(--row-h,24px)'), 'Source rows must use fixed min/max row height');
+assert.ok(html.includes('font-variant-numeric:tabular-nums'), 'Line numbers must use tabular digits');
+assert.ok(html.includes('.ln,.txt{display:block'), 'Line number and text cells must share fixed block row geometry');
+assert.ok(scriptMatch[1].includes("ctx.font = '400 ' + m.fontSize + 'px Consolas, monospace'"), 'Canvas line numbers must use the same monospace font size');
+assert.ok(scriptMatch[1].includes("ctx.font = '800 ' + m.fontSize + 'px Consolas, monospace'"), 'Canvas headings must not switch to a different font metric');
 assert.ok(!html.includes('overflow-wrap:anywhere'), 'Preview must not wrap code lines');
 assert.ok(!html.includes('row-gap'), 'Source rows must not use CSS row gaps');
 assert.ok(!html.includes('pre-wrap'), 'Preview must preserve fixed source rows');

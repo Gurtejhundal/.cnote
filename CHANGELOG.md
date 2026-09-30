@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.3.0
+- Fix Snap Studio preview row alignment by keeping line numbers and source text on the same fixed-height monospace row.
+- Keep note styling from changing row height, so single-digit and double-digit line numbers stay aligned with content.
+
 ## 6.2.9
 - Make one-line notes render plain text by removing the old `-- note --` wrapper from new snippets and old visual output.
 - Tighten Snap Studio row metrics so line numbers use the same fixed size and spacing as source rows.

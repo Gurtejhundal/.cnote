@@ -156,8 +156,8 @@ body{overflow:auto}
 .dots{display:flex;gap:7px;margin-right:18px}.dot{width:8px;height:8px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
 .file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:4px}
 .code{padding:24px 28px 32px;overflow:visible;font-family:Consolas,"Liberation Mono",monospace;font-size:18px;line-height:var(--row-h,24px)}
-.code-row{display:grid;grid-template-columns:40px minmax(0,1fr);height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;gap:0;overflow:visible}.ln{width:40px;padding-right:10px;text-align:right;color:var(--muted);opacity:1;user-select:none;font-family:Consolas,"Liberation Mono",monospace;font-size:var(--ln-size,18px);font-weight:500;line-height:var(--row-h,24px)}.txt{white-space:pre;overflow:visible;color:var(--text);line-height:var(--row-h,24px)}
-.code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
+.code-row{display:grid;grid-template-columns:40px minmax(0,1fr);height:var(--row-h,24px);min-height:var(--row-h,24px);max-height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;padding:0;gap:0;overflow:visible;align-items:center}.ln,.txt{display:block;height:var(--row-h,24px);min-height:var(--row-h,24px);max-height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;box-sizing:border-box;font-family:Consolas,"Liberation Mono",monospace;font-size:var(--ln-size,18px)}.ln{width:40px;padding:0 10px 0 0;text-align:right;color:var(--muted);opacity:1;user-select:none;font-weight:400;font-variant-numeric:tabular-nums}.txt{padding:0;white-space:pre;overflow:visible;color:var(--text);font-weight:500}
+.code-row.boundary .txt{color:var(--muted);font-weight:700}.code-row.heading1 .txt{font-size:1em;font-weight:800}.code-row.heading2 .txt{font-size:1em;font-weight:750}.code-row.heading3 .txt{font-size:1em;font-weight:700}.code-row.note .txt{font-weight:500}.code-row.warning .txt{color:#ffcc66;font-weight:750}.code-row.quote .txt{font-style:italic;color:var(--muted)}.code-row.meta .txt{color:var(--muted);font-size:1em}
 .hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
 .brandmark{display:none;position:absolute;right:22px;bottom:14px;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
 .controls{border-top:1px solid var(--vscode-panel-border);background:var(--vscode-sideBar-background);padding:14px 18px 24px}
@@ -366,16 +366,17 @@ function exportPng() {
     if (s.lineNumbers && line.sourceLine > 0) {
       ctx.textAlign = 'right';
       ctx.fillStyle = t.muted;
-      ctx.font = '500 ' + m.fontSize + 'px Consolas, monospace';
-      ctx.fillText(String(line.sourceLine), m.cardX + SNAP.codeLeft + SNAP.gutter - 14, y);
+      ctx.font = '400 ' + m.fontSize + 'px Consolas, monospace';
+      ctx.fillText(String(line.sourceLine), m.cardX + SNAP.codeLeft + SNAP.gutter - 10, y);
       ctx.textAlign = 'left';
     }
 
     const lineType = line.type || line.kind;
-    if (lineType === 'heading1') ctx.font = '800 ' + m.fontSize + 'px Arial, sans-serif';
-    else if (lineType === 'heading2') ctx.font = '750 ' + m.fontSize + 'px Arial, sans-serif';
-    else if (lineType === 'heading3') ctx.font = '700 ' + m.fontSize + 'px Arial, sans-serif';
-    else if (lineType === 'note' || lineType === 'quote' || lineType === 'warning' || lineType === 'meta') ctx.font = '550 ' + m.fontSize + 'px Arial, sans-serif';
+    if (lineType === 'heading1') ctx.font = '800 ' + m.fontSize + 'px Consolas, monospace';
+    else if (lineType === 'heading2') ctx.font = '750 ' + m.fontSize + 'px Consolas, monospace';
+    else if (lineType === 'heading3') ctx.font = '700 ' + m.fontSize + 'px Consolas, monospace';
+    else if (lineType === 'boundary') ctx.font = '700 ' + m.fontSize + 'px Consolas, monospace';
+    else if (lineType === 'warning') ctx.font = '750 ' + m.fontSize + 'px Consolas, monospace';
     else ctx.font = '500 ' + m.fontSize + 'px Consolas, monospace';
 
     ctx.fillStyle = lineType === 'boundary' || lineType === 'meta' || lineType === 'quote' ? t.muted : (lineType === 'warning' ? '#ffcc66' : t.text);

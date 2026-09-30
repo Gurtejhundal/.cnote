@@ -1,10 +1,10 @@
-<p align="center"><img src="assets/readme-banner.svg" alt=".cnote — your comments got an upgrade. Code, annotate, actually remember it." width="100%"></p>
+<p align="center"><img src="assets/og-image.png" alt=".cnote — your comments got an upgrade. Code, annotate, actually remember it." width="100%"></p>
 
 <p align="center"><b>your code is cooking. your notes should be too. ✨</b><br>Markdown-style study notes inside real source comments. Same file. Way less brain fog.</p>
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.9.vsix"><b>⬇ grab .cnote 6.2.9</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><b>⬇ grab .cnote 6.3.0</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.9.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.9.vsix"><b>👇 Download .cnote 6.2.9 in one click ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><b>👇 Download .cnote 6.3.0 in one click ⚡</b></a><br>
   <sub>VS Code → Extensions → … → Install from VSIX…</sub>
 </p>
 
@@ -129,7 +129,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.2.9.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.9.vsix).
+1. [Download **codenote-6.3.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 
@@ -162,7 +162,7 @@ The Pages workflow publishes the website and download on `main` updates. Website
 
 If .cnote saves you a little brain power, you can help fuel the next update. Or the very ambitious console fund. **No paywall. No guilt trip.**
 
-<p align="center"><img src="media/readme/upi-qr.svg" alt="UPI donation QR for Gurtejbir Singh, unchanged from the original repository" width="200"><br><b>Scan with a UPI app · any amount helps.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>
+<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>
 
 ---
 
