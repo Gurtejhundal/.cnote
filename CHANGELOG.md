@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.6
+- Make the normal Note insert use the compact one-line form so plain text notes do not create opener/closer marker rows.
+- Fix single-line line-comment notes so the parser treats them as exactly one editor line.
+
 ## 6.2.5
 - Add compact C-style line notes and headings: // @note -- text -- and // @section #Heading.
 - Tighten Snap Studio preview sizing so old wide settings fall back to the balanced layout.

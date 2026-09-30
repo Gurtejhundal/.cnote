@@ -66,7 +66,7 @@ function parseSlashLineNotes(document: vscode.TextDocument): NoteBlock[] {
     const body = match?.[2]?.trim();
     if (!match || !body) continue;
     const start = new vscode.Position(line, 0);
-    const end = document.lineAt(line).rangeIncludingLineBreak.end;
+    const end = document.lineAt(line).range.end;
     const raw = document.getText(new vscode.Range(start, end));
     blocks.push(buildBlock(document, match[1].toLowerCase() as NoteKind, raw, body, document.offsetAt(start), document.offsetAt(end)));
   }
@@ -88,7 +88,7 @@ function parseLineStyle(document: vscode.TextDocument, prefix: string, endMarker
     const startLine = line;
     const inlineBody = startMatch[2]?.trim();
     if (inlineBody) {
-      const endPosition = document.lineAt(line).rangeIncludingLineBreak.end;
+      const endPosition = document.lineAt(line).range.end;
       const startOffset = document.offsetAt(new vscode.Position(line, 0));
       const endOffset = document.offsetAt(endPosition);
       const raw = document.getText(new vscode.Range(new vscode.Position(line, 0), endPosition));

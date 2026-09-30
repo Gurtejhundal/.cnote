@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.5.vsix"><b>⬇ grab .cnote 6.2.5</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.6.vsix"><b>⬇ grab .cnote 6.2.6</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.5.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.5.vsix"><b>👇 Download .cnote 6.2.5 in one click ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.6.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.6.vsix"><b>👇 Download .cnote 6.2.6 in one click ⚡</b></a><br>
   <sub>VS Code → Extensions → … → Install from VSIX…</sub>
 </p>
 
@@ -58,7 +58,7 @@ V6.2.1 fixes multi-note drag selection. If your selection crosses several visual
 
 ### 8 note types that actually look different
 
-The Insert Note menu stays focused. Use **Line note** for `// @note -- key line --` and **Heading** for `// @section #Code`; both stay one source line. Three overlapping choices are not offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
+The Insert Note menu stays focused. Use **Note** for `// @note -- key line --` and **Heading** for `// @section #Code`; both stay one source line. Three overlapping choices are not offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
 
 | Type | Visual cue | Best for |
 | --- | --- | --- |
@@ -129,7 +129,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.2.5.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.5.vsix).
+1. [Download **codenote-6.2.6.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.2.6.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 

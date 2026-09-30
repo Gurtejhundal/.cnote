@@ -20,7 +20,7 @@ type MenuPick = vscode.QuickPickItem & { command: string };
 // overlapping kinds when users create new notes. Paragraph/section are just
 // Markdown structure and checkpoint duplicated quiz behaviour.
 const INSERT_NOTE_KINDS: readonly NoteKind[] = [
-  'note', 'definition', 'warning', 'complexity', 'quiz', 'tip', 'example', 'todo'
+  'definition', 'warning', 'complexity', 'quiz', 'tip', 'example', 'todo'
 ];
 
 const NOTE_PICK_LABELS: Partial<Record<NoteKind, string>> = {
@@ -212,7 +212,7 @@ async function pickNoteKind(): Promise<NotePick | undefined> {
     todo: 'Learning or coding task'
   };
   const items: NotePick[] = [
-    { label: '• Line note', detail: 'One highlighted line. Source stays one line.', noteKind: 'note', compact: 'line' },
+    { label: '✦ Note', detail: 'One plain visual line. Source stays one line.', noteKind: 'note', compact: 'line' },
     { label: '# Heading', detail: 'One highlighted heading. Source stays one line.', noteKind: 'section', compact: 'heading' },
     ...INSERT_NOTE_KINDS.map(noteKind => ({
       label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
