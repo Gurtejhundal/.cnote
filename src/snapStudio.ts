@@ -108,9 +108,9 @@ export class SnapStudioManager implements vscode.Disposable {
     const stored = this.context.globalState.get<Partial<Prefs>>('codenote.snapPreferences', {});
     const initial: Prefs = {
       theme: String(stored.theme ?? cfg.get('snap.defaultTemplate', 'aurora')),
-      padding: Number(stored.padding ?? 60),
-      width: Number(stored.width ?? 1320),
-      fontSize: Number(stored.fontSize ?? 21),
+      padding: Number(stored.padding ?? 36),
+      width: Number(stored.width ?? 960),
+      fontSize: Number(stored.fontSize ?? 18),
       lineNumbers: Boolean(stored.lineNumbers ?? cfg.get('snap.lineNumbers', true)),
       windowDots: Boolean(stored.windowDots ?? true),
       branding: Boolean(stored.branding ?? cfg.get('snap.branding', false))
@@ -143,15 +143,15 @@ body{overflow:auto}
 .top{position:sticky;top:0;z-index:30;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--vscode-panel-border);background:var(--vscode-editor-background)}
 .brand{display:flex;align-items:center;gap:9px;min-width:0}.brand b{font-size:14px}.brand span{font-size:11px;opacity:.62;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .actions{display:flex;gap:8px}.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--vscode-button-background);color:var(--vscode-button-foreground);font-weight:700;cursor:pointer}.btn.secondary{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground)}
-.stage{padding:22px 18px 18px;display:flex;justify-content:center;overflow:auto;min-height:350px}
+.stage{padding:18px;display:flex;justify-content:center;overflow:hidden;min-height:320px}
 .preview-wrap{position:relative;flex:0 0 auto}
-.shot{width:1320px;padding:60px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:20px;transform-origin:top center}
+.shot{width:960px;padding:36px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:18px;transform-origin:top center}
 .window{background:var(--card);border-radius:15px;overflow:hidden;box-shadow:0 18px 40px #0007}
-.window-head{height:84px;display:flex;align-items:center;padding:0 30px;border-bottom:1px solid #ffffff10}
-.dots{display:flex;gap:9px;margin-right:24px}.dot{width:12px;height:12px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
-.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 23px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:5px}
-.code{padding:34px 38px 46px;overflow:auto;font-family:Consolas,"Liberation Mono",monospace;font-size:21px;line-height:1.55}
-.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.55em}.ln{width:56px;padding-right:20px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.window-head{height:64px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid #ffffff10}
+.dots{display:flex;gap:7px;margin-right:18px}.dot{width:8px;height:8px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:4px}
+.code{padding:24px 28px 32px;overflow:hidden;font-family:Consolas,"Liberation Mono",monospace;font-size:18px;line-height:1.35}
+.code-row{display:grid;grid-template-columns:auto minmax(0,1fr);min-height:1.35em}.ln{width:44px;padding-right:14px;text-align:right;color:var(--muted);user-select:none}.txt{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
 .code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.3em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.16em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.05em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
 .hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
 .brandmark{display:none;padding:0 22px 16px;text-align:right;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
@@ -190,8 +190,8 @@ details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-
 
   <div class="quick">
     <div class="field"><label>Title</label><input id="title" type="text" value="${escapeHtml(payload.filename)}"></div>
-    <div class="field"><label>Spacing</label><select id="padding"><option value="36">Compact</option><option value="60">Balanced</option><option value="92">Wide</option></select></div>
-    <div class="field"><label>Width</label><select id="width"><option value="1080">1080</option><option value="1320">1320</option><option value="1600">1600</option></select></div>
+    <div class="field"><label>Spacing</label><select id="padding"><option value="28">Compact</option><option value="36">Balanced</option><option value="56">Wide</option></select></div>
+    <div class="field"><label>Width</label><select id="width"><option value="760">760</option><option value="960">960</option><option value="1180">1180</option></select></div>
   </div>
 
   <details>
@@ -235,6 +235,8 @@ const exportCanvas = byId('exportCanvas');
 padding.value = String(s.padding);
 width.value = String(s.width);
 font.value = String(s.fontSize);
+if (!padding.value) padding.value = '36';
+if (!width.value) width.value = '960';
 nums.checked = !!s.lineNumbers;
 dots.checked = !!s.windowDots;
 brand.checked = !!s.branding;
@@ -261,7 +263,7 @@ function applyLayout() {
   shot.style.width = s.width + 'px';
   shot.style.padding = s.padding + 'px';
   document.getElementById('code').style.fontSize = s.fontSize + 'px';
-  const previewScale = Math.min(1, Math.max(0.45, (stage.clientWidth - 24) / s.width));
+  const previewScale = Math.max(0.2, Math.min(1, (stage.clientWidth - 24) / s.width));
   shot.style.transform = 'scale(' + previewScale + ')';
   previewWrap.style.width = Math.round(s.width * previewScale) + 'px';
   previewWrap.style.height = Math.round(shot.getBoundingClientRect().height) + 'px';
@@ -300,13 +302,13 @@ function exportPng() {
   const scale = 2;
   const W = s.width;
   const pad = s.padding;
-  const lineHeight = Math.round(s.fontSize * 1.55);
-  const header = 84;
-  const gutter = s.lineNumbers ? 56 : 0;
+  const lineHeight = Math.round(s.fontSize * 1.35);
+  const header = 64;
+  const gutter = s.lineNumbers ? 44 : 0;
   const cardX = pad;
   const cardY = pad;
   const cardW = W - pad * 2;
-  const cardH = header + 42 + Math.max(1, D.lines.length) * lineHeight + 46;
+  const cardH = header + 24 + Math.max(1, D.lines.length) * lineHeight + 32;
   const H = cardH + pad * 2;
 
   exportCanvas.width = W * scale;
@@ -328,28 +330,28 @@ function exportPng() {
     ['#ff5f57','#febc2e','#28c840'].forEach((color, i) => {
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(cardX + 30 + i * 21, cardY + 28, 6, 0, Math.PI * 2);
+      ctx.arc(cardX + 24 + i * 15, cardY + 24, 4, 0, Math.PI * 2);
       ctx.fill();
     });
   }
 
   ctx.fillStyle = t.text;
-  ctx.font = '650 23px Arial, sans-serif';
-  ctx.fillText(title.value || D.filename, cardX + (s.windowDots ? 112 : 32), cardY + 36);
+  ctx.font = '650 18px Arial, sans-serif';
+  ctx.fillText(title.value || D.filename, cardX + (s.windowDots ? 76 : 28), cardY + 30);
   ctx.fillStyle = t.muted;
-  ctx.font = '500 13px Arial, sans-serif';
-  ctx.fillText(D.languageId + ' · ' + D.sourceLabel, cardX + (s.windowDots ? 112 : 32), cardY + 58);
+  ctx.font = '500 10px Arial, sans-serif';
+  ctx.fillText(D.languageId + ' · ' + D.sourceLabel, cardX + (s.windowDots ? 76 : 28), cardY + 46);
 
-  const startY = cardY + header + 34;
-  const x = cardX + 38 + gutter;
+  const startY = cardY + header + 24;
+  const x = cardX + 28 + gutter;
 
   D.lines.forEach((line, i) => {
     const y = startY + i * lineHeight;
     if (s.lineNumbers && line.sourceLine > 0) {
       ctx.textAlign = 'right';
       ctx.fillStyle = t.muted;
-      ctx.font = '500 ' + Math.max(12, s.fontSize - 3) + 'px Consolas, monospace';
-      ctx.fillText(String(line.sourceLine), cardX + 58, y);
+      ctx.font = '500 ' + Math.max(10, s.fontSize - 3) + 'px Consolas, monospace';
+      ctx.fillText(String(line.sourceLine), cardX + 44, y);
       ctx.textAlign = 'left';
     }
 
@@ -554,7 +556,7 @@ function visualMarkdownLine(raw: string): { text: string; kind: SnapLineKind } {
   if (!trimmed) return { text: '', kind: 'blank' };
   if (/^(id|title|tags|difficulty|status|created)\s*:/i.test(trimmed)) return { text: '', kind: 'meta' };
 
-  const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+  const heading = trimmed.match(/^(#{1,6})\s*(\S.*)$/);
   if (heading) {
     const level = heading[1].length;
     return {

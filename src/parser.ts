@@ -33,9 +33,12 @@ export function parseNoteBlocks(document: vscode.TextDocument): NoteBlock[] {
   const adapter = getLanguageAdapter(document.languageId);
   if (!adapter) return [];
 
-  return adapter.comment.type === 'block'
-    ? parseBlockStyle(document, adapter.comment.open, adapter.comment.close)
-    : parseLineStyle(document, adapter.comment.prefix, adapter.comment.endMarker);
+  if (adapter.comment.type === 'block') {
+    const blocks = parseBlockStyle(document, adapter.comment.open, adapter.comment.close);
+    if (adapter.comment.open === '/*' && adapter.comment.close === '*/') blocks.push(...parseSlashLineNotes(document));
+    return blocks.sort((a, b) => a.startOffset - b.startOffset);
+  }
+  return parseLineStyle(document, adapter.comment.prefix, adapter.comment.endMarker);
 }
 
 function parseBlockStyle(document: vscode.TextDocument, open: string, close: string): NoteBlock[] {
@@ -51,6 +54,21 @@ function parseBlockStyle(document: vscode.TextDocument, open: string, close: str
     const body = cleanBlockBody(match[2]);
     const lineBody = document.positionAt(startOffset).line === document.positionAt(endOffset).line ? body.trim() : body;
     blocks.push(buildBlock(document, kind, match[0], lineBody, startOffset, endOffset));
+  }
+  return blocks;
+}
+
+function parseSlashLineNotes(document: vscode.TextDocument): NoteBlock[] {
+  const blocks: NoteBlock[] = [];
+  const re = new RegExp(`^\\s*//\\s*@(${KINDS_PATTERN})\\b(?:\\s+(.*))?\\s*$`, 'i');
+  for (let line = 0; line < document.lineCount; line += 1) {
+    const match = document.lineAt(line).text.match(re);
+    const body = match?.[2]?.trim();
+    if (!match || !body) continue;
+    const start = new vscode.Position(line, 0);
+    const end = document.lineAt(line).rangeIncludingLineBreak.end;
+    const raw = document.getText(new vscode.Range(start, end));
+    blocks.push(buildBlock(document, match[1].toLowerCase() as NoteKind, raw, body, document.offsetAt(start), document.offsetAt(end)));
   }
   return blocks;
 }
@@ -162,7 +180,7 @@ function deriveTitle(content: string, kind: NoteKind): string {
   for (const rawLine of content.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line) continue;
-    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    const heading = line.match(/^#{1,6}\s*(\S.*)$/);
     if (heading) return stripMarkdown(heading[1]).slice(0, 90);
     if (/^(question|answer)\s*:/i.test(line)) continue;
     return stripMarkdown(line).slice(0, 90);

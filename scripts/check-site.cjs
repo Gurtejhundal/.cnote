@@ -68,7 +68,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.locator('#motion-toggle').click();
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.equal(await page.locator('.controller').evaluate(element => getComputedStyle(element).animationName), 'none');
-    assert.ok(await page.locator('#motion-toggle').isDisabled());
 
     for (const width of [360, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });

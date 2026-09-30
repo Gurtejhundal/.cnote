@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.2.5
+- Add compact C-style line notes and headings: // @note -- text -- and // @section #Heading.
+- Tighten Snap Studio preview sizing so old wide settings fall back to the balanced layout.
+- Add Snap capture regression checks for visible viewport, selections, and visual .cnote rendering.
+
 ## 6.2.4
 - Add one-line note and heading inserts that render from a single source line.
 - Render single-line .cnote comments without opener/closer symbols and remove the note-heading sparkle prefix.

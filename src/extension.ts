@@ -228,7 +228,7 @@ async function pickNoteKind(): Promise<NotePick | undefined> {
 }
 
 function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'heading'): string | undefined {
-  if (compact) return singleLineSnippet(languageId, kind, compact === 'heading' ? '${1:Heading}' : '${1:Write your note.}');
+  if (compact) return singleLineSnippet(languageId, kind, compact);
   const content: Record<NoteKind, string[]> = {
     paragraph: ['${1:Write your note here.}'],
     note: ['# ${1:Topic}', '${2:Write your explanation here.}'],
@@ -245,10 +245,12 @@ function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'hea
   return wrapLines(languageId, kind, content[kind]);
 }
 
-function singleLineSnippet(languageId: string, kind: string, text: string): string | undefined {
+function singleLineSnippet(languageId: string, kind: string, compact: 'line' | 'heading'): string | undefined {
   const adapter = getLanguageAdapter(languageId);
   if (!adapter) return undefined;
   const c = adapter.comment;
+  const text = compact === 'heading' ? '#${1:Heading}' : '-- ${1:Write your note.} --';
+  if (c.type === 'block' && c.open === '/*' && c.close === '*/') return `// @${kind} ${text}`;
   return c.type === 'block' ? `${c.open} @${kind} ${text} ${c.close}` : `${c.prefix} @${kind} ${text}`;
 }
 

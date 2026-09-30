@@ -61,4 +61,17 @@ assert.equal(blocks[0].kind, 'section');
 assert.equal(blocks[0].content, 'Syntax');
 assert.equal(blocks[0].range.start.line, 0);
 
+
+blocks = parseNoteBlocks(doc('// @note -- key line --\nint y;', 'cpp'));
+assert.equal(blocks.length, 1);
+assert.equal(blocks[0].kind, 'note');
+assert.equal(blocks[0].content, '-- key line --');
+assert.equal(blocks[0].range.start.line, 0);
+
+blocks = parseNoteBlocks(doc('// @section #Code\nint z;', 'cpp'));
+assert.equal(blocks.length, 1);
+assert.equal(blocks[0].kind, 'section');
+assert.equal(blocks[0].content, '#Code');
+assert.equal(blocks[0].title, 'Code');
+assert.equal(blocks[0].range.start.line, 0);
 console.log('Single-line .cnote parser checks pass.');

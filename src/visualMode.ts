@@ -217,7 +217,7 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
     return{style:'secondary',text:block.metadata.tags.map(t=>`#${t}`).join('  ')};
   }
 
-  const heading=raw.match(/^\s*(#{1,6})\s+(.+)$/);
+  const heading=raw.match(/^\s*(#{1,6})\s*(\S.*)$/);
   if(heading){
     const depth=heading[1].length;
     return{style:depth===1?'h1':depth===2?'h2':'h3',text:decorateHeading(kind,cleanInlineMarkdown(heading[2]))};
