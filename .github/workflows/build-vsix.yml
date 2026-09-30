@@ -68,22 +68,13 @@ jobs:
           text = p.read_text(encoding='utf-8')
           version = os.environ['CN_VERSION']
 
-          # Keep the Marketplace README in sync with the actual package version.
           text = re.sub(r'codenote-\d+\.\d+\.\d+\.vsix', f'codenote-{version}.vsix', text)
           text = re.sub(r'\.cnote \d+\.\d+\.\d+', f'.cnote {version}', text)
 
-          old = '''<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>'''
-          new = '''<p align="center">
-  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/crying-waterfall.png" alt="Crying waterfall emoji" width="120"><br>
-  <b>if .cnote saved your brain cells... help me buy a PS5 😭🎮</b><br>
-  <sub>absolutely optional. no paywall. no guilt trip. just the side quest.</sub><br><br>
-  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/upi-qr-marketplace.png" alt="UPI QR code for optional .cnote support" width="280"><br>
-  <b>scan with any UPI app</b><br>
-  <sub>Gurtejbir Singh · A GitHub star is love too.</sub>
-</p>'''
+          old = '<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>'
+          new = '<p align="center">\n  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/crying-waterfall.png" alt="Crying waterfall emoji" width="120"><br>\n  <b>if .cnote saved your brain cells... help me buy a PS5 😭🎮</b><br>\n  <sub>absolutely optional. no paywall. no guilt trip. just the side quest.</sub><br><br>\n  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/upi-qr-marketplace.png" alt="UPI QR code for optional .cnote support" width="280"><br>\n  <b>scan with any UPI app</b><br>\n  <sub>Gurtejbir Singh · A GitHub star is love too.</sub>\n</p>'
           text = text.replace(old, new)
 
-          # Marketplace packaging is stricter around SVG images in README content.
           text = re.sub(r'<img\b[^>]*\.svg[^>]*>', '', text, flags=re.I)
           p.write_text(text, encoding='utf-8')
           PY
