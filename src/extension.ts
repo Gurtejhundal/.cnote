@@ -270,7 +270,7 @@ function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'hea
 }
 
 function singleLineSnippet(languageId: string, kind: string, compact: 'line' | 'heading'): string | undefined {
-  const text = compact === 'heading' ? '#${1:Heading}' : '-- ${1:Write your note.} --';
+  const text = compact === 'heading' ? '#${1:Heading}' : '${1:Write your note.}';
   return buildSingleLineNoteSnippet(languageId, kind, text) ?? legacySingleLineSnippet(languageId, kind, text);
 }
 

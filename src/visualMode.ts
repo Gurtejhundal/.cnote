@@ -258,10 +258,15 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
   }
 
   if(showKind&&raw===block.content.split(/\r?\n/)[0])return{style:'secondary',text:prettyKind(kind)};
-  if(kind==='tip')return{style:'quote',text:`💡 ${cleanInlineMarkdown(raw)}`};
-  if(kind==='example')return{style:'paragraph',text:`↪ ${cleanInlineMarkdown(raw)}`};
-  if(kind==='warning')return{style:'warning',text:cleanInlineMarkdown(raw)};
-  return{style:'paragraph',text:cleanInlineMarkdown(raw)};
+  const clean=cleanInlineMarkdown(unwrapDashNote(raw));
+  if(kind==='tip')return{style:'quote',text:`💡 ${clean}`};
+  if(kind==='example')return{style:'paragraph',text:`↪ ${clean}`};
+  if(kind==='warning')return{style:'warning',text:clean};
+  return{style:'paragraph',text:clean};
+}
+
+function unwrapDashNote(value:string):string{
+  return value.trim().replace(/^--\s*(.*?)\s*--$/,'$1');
 }
 
 function decorateHeading(kind:string,text:string):string{

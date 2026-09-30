@@ -156,8 +156,8 @@ body{overflow:auto}
 .dots{display:flex;gap:7px;margin-right:18px}.dot{width:8px;height:8px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
 .file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:4px}
 .code{padding:24px 28px 32px;overflow:visible;font-family:Consolas,"Liberation Mono",monospace;font-size:18px;line-height:var(--row-h,24px)}
-.code-row{display:grid;grid-template-columns:48px minmax(0,1fr);height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;gap:0;overflow:visible}.ln{width:48px;padding-right:14px;text-align:right;color:var(--muted);opacity:1;user-select:none;font-family:Consolas,"Liberation Mono",monospace;font-size:var(--ln-size,15px);font-weight:500;line-height:var(--row-h,24px)}.txt{white-space:pre;overflow:visible;color:var(--text);line-height:var(--row-h,24px)}
-.code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.18em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.1em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1.02em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
+.code-row{display:grid;grid-template-columns:40px minmax(0,1fr);height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;gap:0;overflow:visible}.ln{width:40px;padding-right:10px;text-align:right;color:var(--muted);opacity:1;user-select:none;font-family:Consolas,"Liberation Mono",monospace;font-size:var(--ln-size,18px);font-weight:500;line-height:var(--row-h,24px)}.txt{white-space:pre;overflow:visible;color:var(--text);line-height:var(--row-h,24px)}
+.code-row.boundary .txt{color:var(--muted);font-weight:800}.code-row.heading1 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:800}.code-row.heading2 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:750}.code-row.heading3 .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:1em;font-weight:700}.code-row.note .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:550}.code-row.warning .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ffcc66;font-weight:750}.code-row.quote .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-style:italic;color:var(--muted)}.code-row.meta .txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--muted);font-size:.92em}
 .hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
 .brandmark{display:none;position:absolute;right:22px;bottom:14px;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
 .controls{border-top:1px solid var(--vscode-panel-border);background:var(--vscode-sideBar-background);padding:14px 18px 24px}
@@ -202,7 +202,7 @@ details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-
   <details>
     <summary>More controls</summary>
     <div class="advanced">
-      <div><span class="label">Font size</span><input id="font" type="range" min="16" max="30"></div>
+      <div><span class="label">Font size</span><input id="font" type="range" min="14" max="22"></div>
       <label class="check"><input id="nums" type="checkbox">Line numbers</label>
       <label class="check"><input id="dots" type="checkbox">Window dots</label>
       <label class="check"><input id="brand" type="checkbox">.cnote mark</label>
@@ -237,7 +237,7 @@ const previewTitle = byId('previewTitle');
 const code = byId('code');
 const exportCanvas = byId('exportCanvas');
 
-const SNAP = { header: 64, codeTop: 24, codeBottom: 32, gutter: 48, codeLeft: 28, codeRight: 28, lineRatio: 1.35 };
+const SNAP = { header: 64, codeTop: 24, codeBottom: 32, gutter: 40, codeLeft: 24, codeRight: 28, lineRatio: 1.28 };
 function layoutMetrics(state, lineCount) {
   const width = state.width;
   const pad = state.padding;
@@ -271,7 +271,8 @@ function applyTheme() {
 function applyLayout() {
   s.padding = Number(padding.value);
   s.width = Number(width.value);
-  s.fontSize = Number(font.value);
+  s.fontSize = Math.max(14, Math.min(22, Number(font.value)));
+  font.value = String(s.fontSize);
   s.lineNumbers = !!nums.checked;
   s.windowDots = !!dots.checked;
   s.branding = !!brand.checked;
@@ -283,7 +284,7 @@ function applyLayout() {
   win.style.height = m.cardH + 'px';
   code.style.fontSize = m.fontSize + 'px';
   code.style.setProperty('--row-h', m.lineHeight + 'px');
-  code.style.setProperty('--ln-size', Math.max(10, m.fontSize - 3) + 'px');
+  code.style.setProperty('--ln-size', m.fontSize + 'px');
   const previewScale = 1;
   shot.style.transform = 'scale(' + previewScale + ')';
   previewWrap.style.width = m.width + 'px';
@@ -365,15 +366,15 @@ function exportPng() {
     if (s.lineNumbers && line.sourceLine > 0) {
       ctx.textAlign = 'right';
       ctx.fillStyle = t.muted;
-      ctx.font = '500 ' + Math.max(10, m.fontSize - 3) + 'px Consolas, monospace';
+      ctx.font = '500 ' + m.fontSize + 'px Consolas, monospace';
       ctx.fillText(String(line.sourceLine), m.cardX + SNAP.codeLeft + SNAP.gutter - 14, y);
       ctx.textAlign = 'left';
     }
 
     const lineType = line.type || line.kind;
-    if (lineType === 'heading1') ctx.font = '800 ' + Math.round(m.fontSize * 1.18) + 'px Arial, sans-serif';
-    else if (lineType === 'heading2') ctx.font = '750 ' + Math.round(m.fontSize * 1.1) + 'px Arial, sans-serif';
-    else if (lineType === 'heading3') ctx.font = '700 ' + Math.round(m.fontSize * 1.02) + 'px Arial, sans-serif';
+    if (lineType === 'heading1') ctx.font = '800 ' + m.fontSize + 'px Arial, sans-serif';
+    else if (lineType === 'heading2') ctx.font = '750 ' + m.fontSize + 'px Arial, sans-serif';
+    else if (lineType === 'heading3') ctx.font = '700 ' + m.fontSize + 'px Arial, sans-serif';
     else if (lineType === 'note' || lineType === 'quote' || lineType === 'warning' || lineType === 'meta') ctx.font = '550 ' + m.fontSize + 'px Arial, sans-serif';
     else ctx.font = '500 ' + m.fontSize + 'px Consolas, monospace';
 
@@ -605,8 +606,12 @@ function visualMarkdownLine(raw: string): { text: string; kind: SnapLineKind } {
     return { text: stripInlineMarkdown(trimmed), kind: 'warning' };
   }
 
-  value = stripInlineMarkdown(value);
+  value = stripInlineMarkdown(unwrapDashNote(value));
   return { text: value, kind: 'note' };
+}
+
+function unwrapDashNote(value: string): string {
+  return value.trim().replace(/^--\s*(.*?)\s*--$/, '$1');
 }
 
 function stripInlineMarkdown(value: string): string {

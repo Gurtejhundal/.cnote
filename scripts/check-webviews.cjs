@@ -61,11 +61,12 @@ assert.ok(html.includes('theme-lavender'), 'Snap must render the Lavender templa
 assert.ok(html.includes('Vectors are dynamic arrays.'), 'Snap must server-render preview lines');
 assert.ok(html.includes('&lt;/script&gt;'), 'Preview source must be HTML escaped');
 assert.ok(scriptMatch[1].includes('function exportPng()'), 'Snap must include PNG export logic');
-assert.ok(html.includes('grid-template-columns:48px minmax(0,1fr)'), 'Line numbers must use a fixed gutter');
+assert.ok(html.includes('grid-template-columns:40px minmax(0,1fr)'), 'Line numbers must use a fixed gutter');
 assert.ok(html.includes('white-space:pre'), 'Snap lines must not wrap or reflow in preview');
 assert.ok(html.includes('layoutMetrics(state, lineCount)'), 'Preview and PNG must share layout metrics');
 assert.ok(html.includes('overflow-x:auto;overflow-y:visible'), 'Preview must use horizontal scrolling instead of height-fit shrinking');
 assert.ok(html.includes('const previewScale = 1'), 'Preview must keep the configured image size');
+assert.ok(html.includes("code.style.setProperty('--ln-size', m.fontSize + 'px')"), 'Line numbers must match source font size');
 assert.ok(!html.includes('overflow-wrap:anywhere'), 'Preview must not wrap code lines');
 assert.ok(!html.includes('row-gap'), 'Source rows must not use CSS row gaps');
 assert.ok(!html.includes('pre-wrap'), 'Preview must preserve fixed source rows');

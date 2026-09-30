@@ -62,10 +62,10 @@ assert.equal(blocks[0].content, 'Syntax');
 assert.equal(blocks[0].range.start.line, 0);
 
 
-blocks = parseNoteBlocks(doc('// @note -- key line --\nint y;', 'cpp'));
+blocks = parseNoteBlocks(doc('// @note key line\nint y;', 'cpp'));
 assert.equal(blocks.length, 1);
 assert.equal(blocks[0].kind, 'note');
-assert.equal(blocks[0].content, '-- key line --');
+assert.equal(blocks[0].content, 'key line');
 assert.equal(blocks[0].range.start.line, 0);
 assert.equal(blocks[0].range.end.line, 0);
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.2.9
+- Make one-line notes render plain text by removing the old `-- note --` wrapper from new snippets and old visual output.
+- Tighten Snap Studio row metrics so line numbers use the same fixed size and spacing as source rows.
+- Update the website with the current `--` + Space and `#` + Space rules.
+
 ## 6.2.8
 - Keep Snap Studio previews at the configured image size and use horizontal scrolling instead of shrinking the card by height.
 - Add safe typing shortcuts: type `-- ` for a one-line note and `# ` for a heading in slash-comment languages.

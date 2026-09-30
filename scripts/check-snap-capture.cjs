@@ -86,7 +86,7 @@ const source = [
   'it will display array',
   '*/',
   'return 0;',
-  '// @note -- one line --',
+  '// @note one line',
   'int after = 1;'
 ].join('\n');
 const document = doc(source);
@@ -109,7 +109,7 @@ assert.ok(!snap.lines.some(line => /@note|\/\*|\*\//.test(line.text)));
 
 snap = capture(document, selection(1, 0, 12, 0));
 assert.ok(snap.lines.some(line => line.text === 'Syntax'));
-assert.ok(snap.lines.some(line => line.text === '-- one line --'));
+assert.ok(snap.lines.some(line => line.text === 'one line'));
 assert.ok(!snap.lines.some(line => /@section|@note|\/\*|\*\//.test(line.text)));
 
 assert.ok(snap.lines.some(line => line.kind === 'blank') || source.includes('\n\n') === false);
@@ -142,5 +142,9 @@ assert.ok(snap.lines.every(line => typeof line.indent === 'number'));
 snap = capture(document, selection(6, 0, 10, 0));
 assert.equal(JSON.stringify(snap.lines.map(line => line.text)), JSON.stringify(['◆', 'display', 'it will display array', '◆']));
 assert.ok(!snap.lines.some(line => /◆\s+✦|✦\s+display/.test(line.text)));
+
+// old dash-wrapped line notes render as plain text.
+snap = capture(doc('// @note -- old wrapper --', 'cpp'), selection(0, 0, 0, 0), 0, 0);
+assert.equal(snap.lines[0].text, 'old wrapper');
 
 console.log('Snap capture regression checks pass.');
