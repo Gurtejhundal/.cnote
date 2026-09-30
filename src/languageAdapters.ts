@@ -54,6 +54,22 @@ export function supportedLanguageIds(): string[] {
   return [...new Set(adapters.flatMap(adapter => adapter.languageIds))].sort();
 }
 
+export function buildSingleLineNoteSnippet(languageId: string, kind: string, text: string): string | undefined {
+  const adapter = getLanguageAdapter(languageId);
+  if (!adapter) return undefined;
+  const c = adapter.comment;
+  if (c.type === 'block' && c.open === '/*' && c.close === '*/') return `// @${kind} ${text}`;
+  if (c.type === 'line' && c.prefix === '//') return `${c.prefix} @${kind} ${text}`;
+  return undefined;
+}
+
+export function expandTypingShortcut(languageId: string, lineText: string): string | undefined {
+  const trimmed = lineText.trimStart();
+  if (trimmed === '-- ') return buildSingleLineNoteSnippet(languageId, 'note', '-- ${1:Write your note.} --');
+  if (trimmed === '# ') return buildSingleLineNoteSnippet(languageId, 'section', '#${1:Heading}');
+  return undefined;
+}
+
 export function wrapNoteSnippet(languageId: string, kind: string, innerLines: string[]): string | undefined {
   const adapter = getLanguageAdapter(languageId);
   if (!adapter) return undefined;

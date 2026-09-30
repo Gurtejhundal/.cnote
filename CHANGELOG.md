@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.2.8
+- Keep Snap Studio previews at the configured image size and use horizontal scrolling instead of shrinking the card by height.
+- Add safe typing shortcuts: type `-- ` for a one-line note and `# ` for a heading in slash-comment languages.
+
 ## 6.2.7
 - Rebuild Snap Studio around fixed source rows so preview spacing matches the exported PNG.
 - Scale the full preview card to fit narrow panels without wrapping or cropping.

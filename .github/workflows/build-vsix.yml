@@ -46,6 +46,9 @@ jobs:
       - name: Check Snap capture logic
         run: node scripts/check-snap-capture.cjs
 
+      - name: Check typing shortcuts
+        run: node scripts/check-shortcuts.cjs
+
       - name: Read package version
         shell: bash
         run: |

@@ -148,8 +148,8 @@ body{overflow:auto}
 .top{position:sticky;top:0;z-index:30;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--vscode-panel-border);background:var(--vscode-editor-background)}
 .brand{display:flex;align-items:center;gap:9px;min-width:0}.brand b{font-size:14px}.brand span{font-size:11px;opacity:.62;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .actions{display:flex;gap:8px}.btn{border:0;border-radius:7px;padding:8px 12px;background:var(--vscode-button-background);color:var(--vscode-button-foreground);font-weight:700;cursor:pointer}.btn.secondary{background:var(--vscode-button-secondaryBackground);color:var(--vscode-button-secondaryForeground)}
-.stage{padding:18px;display:flex;justify-content:center;align-items:flex-start;overflow:auto;min-height:260px}
-.preview-wrap{position:relative;flex:0 0 auto}
+.stage{padding:18px;overflow-x:auto;overflow-y:visible;min-height:260px}
+.preview-wrap{position:relative;width:max-content;height:max-content;margin:0 auto}
 .shot{width:960px;padding:36px;background:linear-gradient(135deg,var(--a),var(--b) 52%,var(--c));border-radius:18px;transform-origin:top center}
 .window{position:relative;background:var(--card);border-radius:15px;overflow:hidden;box-shadow:0 18px 40px #0007}
 .window-head{height:64px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid #ffffff10}
@@ -223,7 +223,6 @@ const themes = ${JSON.stringify(THEMES)};
 let s = Object.assign({}, D.initial);
 
 const byId = (id) => document.getElementById(id);
-const stage = byId('stage');
 const previewWrap = byId('previewWrap');
 const shot = byId('shot');
 const win = byId('window');
@@ -235,7 +234,6 @@ const nums = byId('nums');
 const dots = byId('dots');
 const brand = byId('brand');
 const previewTitle = byId('previewTitle');
-const controls = byId('controls');
 const code = byId('code');
 const exportCanvas = byId('exportCanvas');
 
@@ -286,12 +284,10 @@ function applyLayout() {
   code.style.fontSize = m.fontSize + 'px';
   code.style.setProperty('--row-h', m.lineHeight + 'px');
   code.style.setProperty('--ln-size', Math.max(10, m.fontSize - 3) + 'px');
-  const availableWidth = Math.max(1, stage.clientWidth - 24);
-  const availableHeight = Math.max(1, window.innerHeight - stage.getBoundingClientRect().top - controls.offsetHeight - 28);
-  const previewScale = Math.max(0.08, Math.min(availableWidth / m.width, availableHeight / m.height, 1));
+  const previewScale = 1;
   shot.style.transform = 'scale(' + previewScale + ')';
-  previewWrap.style.width = Math.ceil(m.width * previewScale) + 'px';
-  previewWrap.style.height = Math.ceil(m.height * previewScale) + 'px';
+  previewWrap.style.width = m.width + 'px';
+  previewWrap.style.height = m.height + 'px';
   win.classList.toggle('hide-lines', !s.lineNumbers);
   win.classList.toggle('hide-dots', !s.windowDots);
   win.classList.toggle('show-brand', s.branding);
