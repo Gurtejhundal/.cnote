@@ -46,6 +46,9 @@ jobs:
       - name: Check inline note parsing
         run: node scripts/check-inline-notes.cjs
 
+      - name: Check inline visual planning
+        run: node scripts/check-inline-visual.cjs
+
       - name: Check Snap capture logic
         run: node scripts/check-snap-capture.cjs
 
