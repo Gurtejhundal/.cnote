@@ -69,6 +69,15 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.equal(await page.locator('.controller').evaluate(element => getComputedStyle(element).animationName), 'none');
 
+    for (const viewport of [{ width: 1366, height: 768 }, { width: 1440, height: 900 }, { width: 1920, height: 1080 }]) {
+      await page.setViewportSize(viewport);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const cta = await page.locator('.hero-actions .button').boundingBox();
+      const visual = await page.locator('.hero-visual').boundingBox();
+      assert.ok(cta && cta.y + cta.height <= viewport.height, `Hero CTA must fit without scrolling at ${viewport.width}x${viewport.height}`);
+      assert.ok(visual && visual.y < viewport.height, `Hero visual must start in first viewport at ${viewport.width}x${viewport.height}`);
+    }
+
     for (const width of [360, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.evaluate(() => window.scrollTo(0, 0));

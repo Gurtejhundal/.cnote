@@ -1,5 +1,13 @@
 # Changelog
 
+## 6.7.2
+- Tighten website desktop density so the hero CTA fits short wide viewports.
+- Harden note parsing so annotation-looking text inside strings is ignored.
+- Fix folding end lines for multiline line-comment notes.
+- Require trusted workspaces before running code and clean temporary cell sources after runs.
+- Keep compiled runner artifacts out of source folders.
+- Share in-progress workspace index scans and guard package publisher metadata in CI.
+
 ## 6.7.1
 - Add `!!` + Space paragraph shortcut for multiline paragraph notes.
 - Add configurable paragraph typing trigger in Settings.

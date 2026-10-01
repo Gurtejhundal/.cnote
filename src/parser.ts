@@ -43,7 +43,7 @@ export function parseNoteBlocks(document: vscode.TextDocument): NoteBlock[] {
 
 function parseBlockStyle(document: vscode.TextDocument, open: string, close: string): NoteBlock[] {
   const text = document.getText();
-  const re = new RegExp(`${escapeRegExp(open)}\\s*@(${KINDS_PATTERN})\\b([\\s\\S]*?)${escapeRegExp(close)}`, 'gi');
+  const re = new RegExp(`^\\s*${escapeRegExp(open)}\\s*@(${KINDS_PATTERN})\\b([\\s\\S]*?)${escapeRegExp(close)}`, 'gim');
   const blocks: NoteBlock[] = [];
   let match: RegExpExecArray | null;
 
@@ -56,6 +56,10 @@ function parseBlockStyle(document: vscode.TextDocument, open: string, close: str
     blocks.push(buildBlock(document, kind, match[0], lineBody, startOffset, endOffset));
   }
   return blocks;
+}
+
+export function effectiveEndLine(block: NoteBlock): number {
+  return block.range.end.character === 0 ? Math.max(block.range.start.line, block.range.end.line - 1) : block.range.end.line;
 }
 
 function parseSlashLineNotes(document: vscode.TextDocument): NoteBlock[] {

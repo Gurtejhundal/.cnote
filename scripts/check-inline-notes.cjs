@@ -48,7 +48,7 @@ function doc(text, languageId) {
   };
 }
 
-const { parseNoteBlocks } = load('parser.js');
+const { effectiveEndLine, parseNoteBlocks } = load('parser.js');
 let blocks = parseNoteBlocks(doc('/* @note print whole vector */\nint x;', 'cpp'));
 assert.equal(blocks.length, 1);
 assert.equal(blocks[0].kind, 'note');
@@ -61,6 +61,19 @@ assert.equal(blocks[0].kind, 'section');
 assert.equal(blocks[0].content, 'Syntax');
 assert.equal(blocks[0].range.start.line, 0);
 
+
+blocks = parseNoteBlocks(doc(`const s = "/* @note not a real note */";
+/* @note real note */`, 'cpp'));
+assert.equal(blocks.length, 1);
+assert.equal(blocks[0].content, 'real note');
+
+blocks = parseNoteBlocks(doc(`# @note
+# body
+# @end
+print("x")`, 'python'));
+assert.equal(blocks.length, 1);
+assert.equal(blocks[0].range.end.line, 3);
+assert.equal(effectiveEndLine(blocks[0]), 2);
 
 blocks = parseNoteBlocks(doc('// @note key line\nint y;', 'cpp'));
 assert.equal(blocks.length, 1);

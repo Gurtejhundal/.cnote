@@ -49,6 +49,9 @@ jobs:
       - name: Check typing shortcuts
         run: node scripts/check-shortcuts.cjs
 
+      - name: Check package metadata
+        run: node scripts/check-package.cjs
+
       - name: Read package version
         shell: bash
         run: |

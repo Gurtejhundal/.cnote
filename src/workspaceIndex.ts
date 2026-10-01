@@ -10,7 +10,7 @@ const EXCLUDE_GLOB = '**/{node_modules,.git,dist,build,out,target,.next,.venv,ve
 
 export class WorkspaceNoteIndex implements vscode.Disposable {
   private notes: IndexedNote[] = [];
-  private scanning = false;
+  private scanPromise?: Promise<void>;
   private readonly emitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.emitter.event;
 
@@ -18,10 +18,10 @@ export class WorkspaceNoteIndex implements vscode.Disposable {
   count(): number { return this.notes.length; }
 
   async scan(showProgress = false): Promise<void> {
-    if (this.scanning || !vscode.workspace.workspaceFolders?.length) return;
-    this.scanning = true;
+    if (this.scanPromise) return this.scanPromise;
+    if (!vscode.workspace.workspaceFolders?.length) return;
     const job = async () => {
-      const maxFiles = vscode.workspace.getConfiguration('codenote').get<number>('workspaceIndexMaxFiles', 500);
+      const maxFiles = vscode.workspace.getConfiguration('codenote').get<number>('workspaceIndexMaxFiles', 750);
       const uris = await vscode.workspace.findFiles(NOTE_GLOB, EXCLUDE_GLOB, maxFiles);
       const indexed: IndexedNote[] = [];
       for (const uri of uris) {
@@ -36,10 +36,12 @@ export class WorkspaceNoteIndex implements vscode.Disposable {
       this.notes = indexed.sort((a,b) => a.relativePath.localeCompare(b.relativePath) || a.block.startOffset - b.block.startOffset);
       this.emitter.fire();
     };
-    try {
+    this.scanPromise = (async () => {
       if (showProgress) await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'CodeNote: indexing workspace…' }, job);
       else await job();
-    } finally { this.scanning = false; }
+    })();
+    try { await this.scanPromise; }
+    finally { this.scanPromise = undefined; }
   }
 
   async refreshDocument(document: vscode.TextDocument): Promise<void> {
