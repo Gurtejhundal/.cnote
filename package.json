@@ -2,7 +2,7 @@
   "name": "codenote",
   "displayName": ".cnote",
   "description": "Write visual Markdown notes inside real source files, study them by section, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "7.1.5",
+  "version": "7.1.6",
   "publisher": "gurtejhundal",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
@@ -88,6 +88,12 @@
       }
     }
   },
-  "scripts": {"vscode:prepublish":"npm run compile","compile":"tsc -p ./","watch":"tsc -watch -p ./","package":"vsce package"},
+  "scripts": {
+    "vscode:prepublish":"npm run compile",
+    "compile":"tsc -p ./",
+    "watch":"tsc -watch -p ./",
+    "test":"npm run compile && node scripts/check-inline-notes.cjs && node scripts/check-inline-visual.cjs && node scripts/check-webviews.cjs && node scripts/check-shortcuts.cjs && node scripts/check-snap-capture.cjs",
+    "package":"vsce package"
+  },
   "devDependencies": {"@types/node":"^22.0.0","@types/vscode":"^1.90.0","@vscode/vsce":"^3.2.2","typescript":"^5.5.0"}
 }
