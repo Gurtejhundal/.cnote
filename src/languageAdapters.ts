@@ -63,11 +63,17 @@ export function buildSingleLineNoteSnippet(languageId: string, kind: string, tex
   return undefined;
 }
 
-export function expandTypingShortcut(languageId: string, lineText: string, noteTrigger = '--', headingTrigger = '#'): string | undefined {
+export function expandTypingShortcut(languageId: string, lineText: string, noteTrigger = '--', headingTrigger = '#', paragraphTrigger = '!!'): string | undefined {
   const trimmed = lineText.trimStart();
   if (noteTrigger && trimmed === `${noteTrigger} `) return buildSingleLineNoteSnippet(languageId, 'note', '');
   if (headingTrigger && trimmed === `${headingTrigger} `) return buildSingleLineNoteSnippet(languageId, 'section', '#');
+  if (paragraphTrigger && trimmed === `${paragraphTrigger} `) return wrapNoteSnippet(languageId, 'paragraph', ['${1:Write your paragraph.}']);
   return undefined;
+}
+
+export function todoContinuationText(lineText: string): string | undefined {
+  const match = lineText.match(/^(\s*)((?:(?:\/\/|#|--|;|%|!|REM|')\s*)?)- \[[ xX]\]\s+.*$/);
+  return match ? `${match[1]}${match[2]}- [ ] ` : undefined;
 }
 
 export function wrapNoteSnippet(languageId: string, kind: string, innerLines: string[]): string | undefined {

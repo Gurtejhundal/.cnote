@@ -2,7 +2,7 @@
   "name": "codenote",
   "displayName": ".cnote",
   "description": "Write visual Markdown notes inside real source files, browse them in Notebook, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "6.7.0",
+  "version": "6.7.1",
   "publisher": "gurtejbirsingh-dev",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
@@ -80,7 +80,8 @@
         "codenote.inlineBoundarySymbol":{"type":"string","default":"◆","maxLength":12,"description":"Custom symbol shown at the start and end of an inline visual note when boundary style is Symbol."},
         "codenote.inlineBoundaryLabel":{"type":"boolean","default":false,"description":"Show the note type beside the opening inline boundary marker."},
         "codenote.shortcut.noteTrigger":{"type":"string","default":"--","description":"Text typed at the start of a line followed by Space to create a one-line .cnote note."},
-        "codenote.shortcut.headingTrigger":{"type":"string","default":"#","description":"Text typed at the start of a line followed by Space to create a one-line .cnote heading."}
+        "codenote.shortcut.headingTrigger":{"type":"string","default":"#","description":"Text typed at the start of a line followed by Space to create a one-line .cnote heading."},
+        "codenote.shortcut.paragraphTrigger":{"type":"string","default":"!!","description":"Text typed at the start of a line followed by Space to create a multiline .cnote paragraph block."}
       }
     }
   },

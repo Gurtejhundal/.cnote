@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.7.1
+- Add `!!` + Space paragraph shortcut for multiline paragraph notes.
+- Add configurable paragraph typing trigger in Settings.
+- Continue todo lists by inserting `- [ ]` after pressing Enter on an existing todo item.
+
 ## 6.7.0
 - Redesign Notebook cells so code and note cells are editable in the webview.
 - Add Draft only vs Write to source mode, with Save and Remove controls per cell.

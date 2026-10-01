@@ -95,6 +95,7 @@ const { SettingsPanel } = load('settingsPanel.js');
 const settingsHtml = new SettingsPanel().html();
 assert.ok(settingsHtml.includes('shortcut.noteTrigger'), 'Settings must expose note shortcut trigger');
 assert.ok(settingsHtml.includes('shortcut.headingTrigger'), 'Settings must expose heading shortcut trigger');
+assert.ok(settingsHtml.includes('shortcut.paragraphTrigger'), 'Settings must expose paragraph shortcut trigger');
 const settingsScript = settingsHtml.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new vm.Script(settingsScript), 'Settings webview must contain valid JavaScript');
 

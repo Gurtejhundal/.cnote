@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { CodeNoteFoldingProvider } from './folding';
-import { buildSingleLineNoteSnippet, expandTypingShortcut, getLanguageAdapter, isSupportedLanguage, supportedLanguageIds } from './languageAdapters';
+import { buildSingleLineNoteSnippet, expandTypingShortcut, getLanguageAdapter, isSupportedLanguage, supportedLanguageIds, todoContinuationText } from './languageAdapters';
 import { NOTE_KINDS, NoteBlock, NoteKind, parseNoteBlocks } from './parser';
 import { CodeNoteOutlineProvider } from './outline';
 import { ReviewStore } from './review';
@@ -16,9 +16,7 @@ import { SettingsPanel } from './settingsPanel';
 type NotePick = vscode.QuickPickItem & { noteKind: NoteKind; compact?: 'line' | 'heading' };
 type MenuPick = vscode.QuickPickItem & { command: string };
 
-// Keep the old parser kinds for backwards compatibility, but do not offer
-// overlapping kinds when users create new notes. Paragraph/section are just
-// Markdown structure and checkpoint duplicated quiz behaviour.
+// Keep overlapping legacy review kind out of new notes; old files still parse.
 const INSERT_NOTE_KINDS: readonly NoteKind[] = [
   'definition', 'warning', 'complexity', 'quiz', 'tip', 'example', 'todo'
 ];
@@ -125,6 +123,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document === event.document) {
         void applyTypingShortcut(editor, event, () => expandingTypingShortcut, value => { expandingTypingShortcut = value; });
+        void applyTodoContinuation(editor, event, () => expandingTypingShortcut, value => { expandingTypingShortcut = value; });
         visual.schedule(editor, 45);
       }
     }),
@@ -196,12 +195,38 @@ async function applyTypingShortcut(
   const lineNo = event.contentChanges[0].range.start.line;
   const line = editor.document.lineAt(lineNo);
   const cfg = vscode.workspace.getConfiguration('codenote');
-  const snippet = expandTypingShortcut(editor.document.languageId, line.text, cfg.get('shortcut.noteTrigger', '--'), cfg.get('shortcut.headingTrigger', '#'));
+  const snippet = expandTypingShortcut(
+    editor.document.languageId,
+    line.text,
+    cfg.get('shortcut.noteTrigger', '--'),
+    cfg.get('shortcut.headingTrigger', '#'),
+    cfg.get('shortcut.paragraphTrigger', '!!')
+  );
   if (!snippet) return;
   const indent = line.text.match(/^\s*/)?.[0] ?? '';
   setBusy(true);
   try {
-    await editor.insertSnippet(new vscode.SnippetString(indent + snippet), line.range, { undoStopBefore: false, undoStopAfter: true });
+    const text = snippet.split('\n').map(value => value ? indent + value : value).join('\n');
+    await editor.insertSnippet(new vscode.SnippetString(text), line.range, { undoStopBefore: false, undoStopAfter: true });
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function applyTodoContinuation(
+  editor: vscode.TextEditor,
+  event: vscode.TextDocumentChangeEvent,
+  isBusy: () => boolean,
+  setBusy: (value: boolean) => void
+): Promise<void> {
+  if (isBusy() || event.contentChanges.length !== 1 || !/\r?\n/.test(event.contentChanges[0].text)) return;
+  const nextLineNo = event.contentChanges[0].range.start.line + 1;
+  if (nextLineNo >= editor.document.lineCount) return;
+  const continuation = todoContinuationText(editor.document.lineAt(nextLineNo - 1).text);
+  if (!continuation || editor.document.lineAt(nextLineNo).text.trim()) return;
+  setBusy(true);
+  try {
+    await editor.insertSnippet(new vscode.SnippetString(continuation), editor.document.lineAt(nextLineNo).range, { undoStopBefore: false, undoStopAfter: true });
   } finally {
     setBusy(false);
   }
@@ -240,6 +265,7 @@ async function pickNoteKind(): Promise<NotePick | undefined> {
   const items: NotePick[] = [
     { label: '✦ Note', detail: 'One plain visual line. Source stays one line.', noteKind: 'note', compact: 'line' },
     { label: '# Heading', detail: 'One highlighted heading. Source stays one line.', noteKind: 'section', compact: 'heading' },
+    { label: '¶ Paragraph', detail: 'Multiline prose block for longer notes.', noteKind: 'paragraph' },
     ...INSERT_NOTE_KINDS.map(noteKind => ({
       label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
       detail: details[noteKind],
@@ -256,7 +282,7 @@ async function pickNoteKind(): Promise<NotePick | undefined> {
 function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'heading'): string | undefined {
   if (compact) return singleLineSnippet(languageId, kind, compact);
   const content: Record<NoteKind, string[]> = {
-    paragraph: ['${1:Write your note here.}'],
+    paragraph: ['${1:Write your paragraph.}'],
     note: ['# ${1:Topic}', '${2:Write your explanation here.}'],
     section: ['# ${1:Section}', '${2:What this section covers.}'],
     definition: ['# ${1:Concept}', 'Meaning: ${2:Write the exact definition.}'],
