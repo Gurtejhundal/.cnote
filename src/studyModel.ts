@@ -123,11 +123,20 @@ function pushCodeItem(document: vscode.TextDocument, items: StudyItem[], startOf
 
 function trimBlankLines(document: vscode.TextDocument, startOffset: number, endOffset: number): { startOffset: number; endOffset: number } | undefined {
   const text = document.getText();
-  let start = Math.max(0, Math.min(startOffset, text.length));
-  let end = Math.max(start, Math.min(endOffset, text.length));
-  while (start < end && /\s/.test(text[start])) start += 1;
-  while (end > start && /\s/.test(text[end - 1])) end -= 1;
-  return end > start ? { startOffset: start, endOffset: end } : undefined;
+  const start = Math.max(0, Math.min(startOffset, text.length));
+  const end = Math.max(start, Math.min(endOffset, text.length));
+  const segment = text.slice(start, end);
+  if (!segment.trim()) return undefined;
+
+  // Remove only complete blank rows at the outer edges. Do NOT trim spaces/tabs
+  // from the first meaningful source line; Study cells must preserve indentation
+  // exactly so Apply-to-source and editor-like shortcuts are safe.
+  const leading = segment.match(/^(?:[\t ]*\r?\n)+/)?.[0].length ?? 0;
+  const afterLeading = segment.slice(leading);
+  const trailing = afterLeading.match(/(?:\r?\n[\t ]*)+$/)?.[0].length ?? 0;
+  const trimmedStart = start + leading;
+  const trimmedEnd = end - trailing;
+  return trimmedEnd > trimmedStart ? { startOffset: trimmedStart, endOffset: trimmedEnd } : undefined;
 }
 
 function emptyOverview(document: vscode.TextDocument): StudySection {
@@ -151,4 +160,3 @@ export function studyLineLabel(startLine: number, endLine: number): string {
 export function noteLineLabel(block: NoteBlock): string {
   return studyLineLabel(block.range.start.line, effectiveEndLine(block));
 }
-
