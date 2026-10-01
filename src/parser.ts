@@ -43,7 +43,10 @@ export function parseNoteBlocks(document: vscode.TextDocument): NoteBlock[] {
 
 function parseBlockStyle(document: vscode.TextDocument, open: string, close: string): NoteBlock[] {
   const text = document.getText();
-  const re = new RegExp(`^\\s*${escapeRegExp(open)}\\s*@(${KINDS_PATTERN})\\b([\\s\\S]*?)${escapeRegExp(close)}`, 'gim');
+  // IMPORTANT: only spaces/tabs are allowed before the opener. Using \s* here
+  // also consumes newlines, which moves block.startOffset onto a previous blank
+  // line and makes Inline Visual Mode leave the real `/* @kind` row visible.
+  const re = new RegExp(`^[\\t ]*${escapeRegExp(open)}\\s*@(${KINDS_PATTERN})\\b([\\s\\S]*?)${escapeRegExp(close)}`, 'gim');
   const blocks: NoteBlock[] = [];
   let match: RegExpExecArray | null;
 
