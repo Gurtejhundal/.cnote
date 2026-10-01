@@ -8,7 +8,7 @@ on:
       - 'styles.css'
       - 'script.js'
       - 'assets/**'
-      - 'media/readme/upi-qr.svg'
+      - 'media/readme/**'
       - 'downloads/**'
       - '.github/workflows/pages.yml'
   workflow_run:
@@ -43,7 +43,7 @@ jobs:
           mkdir -p _site/media/readme
           cp index.html styles.css script.js _site/
           cp -R assets downloads _site/
-          cp media/readme/upi-qr.svg _site/media/readme/
+          cp -R media/readme/. _site/media/readme/
           rm _site/assets/README.md
       - uses: actions/upload-pages-artifact@v4
         with:
