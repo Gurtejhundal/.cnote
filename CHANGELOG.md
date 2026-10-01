@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.1.7 - 2026-10-01
+- Fix the Study webview runtime itself: preserve embedded JavaScript escape sequences with `String.raw`, eliminating the script parse failure that made cell buttons and keyboard shortcuts appear dead.
+- Restore per-cell Run and Ctrl/Cmd+Enter execution without changing the Study design.
+- Make Ctrl/Cmd+/ robust through the physical Slash key while keeping Apply, indent/outdent, move, duplicate, and delete-line shortcuts.
+- Add a real Study webview JavaScript parse smoke test to CI so a broken embedded script cannot ship again.
+
 ## 7.1.6 - 2026-10-01
 - Fix the multiline parser regression for every block note kind so blank lines above a note can no longer shift the visual opener row.
 - Route all multiline Inline Visual Mode rendering through one deterministic physical-line planner; raw `@kind`, opener, and closer syntax no longer share the same render range as visual replacement text.

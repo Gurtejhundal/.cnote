@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+
+const src = fs.readFileSync('src/studyPreview.ts', 'utf8');
+const marker = 'this.panel.webview.html = String.raw`';
+const start = src.indexOf(marker);
+assert.ok(start >= 0, 'Study HTML must use String.raw so embedded JavaScript escapes survive template rendering');
+const bodyStart = start + marker.length;
+const end = src.indexOf('`;\n  }', bodyStart);
+assert.ok(end > bodyStart, 'Could not locate the end of the Study webview template');
+let html = src.slice(bodyStart, end);
+html = html.replace(/\$\{[^{}]*\}/g, '0');
+assert.ok(!html.includes('${'), 'Study smoke test could not neutralize all host template substitutions');
+const match = html.match(/<script nonce="[^"]*">([\s\S]*?)<\/script>/);
+assert.ok(match, 'Study webview template must contain a script');
+assert.doesNotThrow(() => new vm.Script(match[1]), 'Generated Study webview JavaScript must parse');
+assert.ok(match[1].includes("event.code==='Slash'"), 'Study must support Ctrl/Cmd+/ by physical Slash key');
+assert.ok(match[1].includes("event.code==='NumpadEnter'"), 'Study must support Ctrl/Cmd+Enter across Enter keys');
+assert.ok(src.includes('data-run-code'), 'Study must keep per-cell Run controls');
+console.log('Study webview JavaScript parses and cell keyboard handlers are present.');

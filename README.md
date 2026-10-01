@@ -15,7 +15,7 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.5.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.7.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
   <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote from Marketplace ⚡</b></a><br>
   <sub>Manual VSIX is still available in the GitHub repo.</sub>
 </p>
@@ -131,7 +131,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 1. Install [**.cnote on the Visual Studio Marketplace**](https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote).
 2. Open a supported source file and hit **Ctrl/Cmd + Shift + F6** to insert a note.
-3. Use **Ctrl/Cmd + Shift + F7** for Study. Manual VSIX fallback: [codenote-7.1.5.vsix](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.5.vsix).
+3. Use **Ctrl/Cmd + Shift + F7** for Study. Manual VSIX fallback: [codenote-7.1.7.vsix](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.7.vsix).
 
 ## fork it. break it. improve it. 🛠️
 
