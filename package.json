@@ -1,8 +1,8 @@
 {
   "name": "codenote",
   "displayName": ".cnote",
-  "description": "Write visual Markdown notes inside real source files, browse them in Notebook, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "6.7.3",
+  "description": "Write visual Markdown notes inside real source files, study them by section, review concepts, export PDF, and create aesthetic code snapshots.",
+  "version": "7.0.0",
   "publisher": "gurtejhundal",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
@@ -21,13 +21,13 @@
     "commands": [
       {"command":"codenote.insertNote","title":"CodeNote: Insert Note","icon":"$(edit)"},
       {"command":"codenote.annotateSelection","title":"CodeNote: Explain Selected Code"},
-      {"command":"codenote.openStudyPreview","title":"CodeNote: Open Notebook","icon":"$(book-open)"},
+      {"command":"codenote.openStudyPreview","title":"CodeNote: Open Study","icon":"$(book-open)"},
       {"command":"codenote.openQuickMenu","title":"CodeNote: .cnote Menu","icon":"$(notebook)"},
       {"command":"codenote.runFile","title":"CodeNote: Run Current File","icon":"$(play)"},
       {"command":"codenote.openSnapStudio","title":"CodeNote: Snap Code","icon":"$(device-camera)"},
       {"command":"codenote.openSettings","title":"CodeNote: Settings","icon":"$(settings-gear)"},
       {"command":"codenote.exportNotes","title":"CodeNote: Export Current File Notes"},
-      {"command":"codenote.exportStudyPdf","title":"CodeNote: Export Notebook PDF","icon":"$(file-pdf)"},
+      {"command":"codenote.exportStudyPdf","title":"CodeNote: Export Study PDF","icon":"$(file-pdf)"},
       {"command":"codenote.exportWorkspaceNotes","title":"CodeNote: Export Workspace Notes"},
       {"command":"codenote.searchWorkspace","title":"CodeNote: Find Notes"},
       {"command":"codenote.startReview","title":"CodeNote: Review Due Quizzes"},
@@ -41,7 +41,7 @@
       {"command":"codenote.openSnapStudio","key":"ctrl+shift+f10","mac":"cmd+shift+f10","when":"editorTextFocus"}
     ],
     "viewsContainers": {"activitybar":[{"id":"codenote","title":".cnote","icon":"media/codenote.svg"}]},
-    "views": {"codenote":[{"id":"codenote.notes","name":"Notebook"}]},
+    "views": {"codenote":[{"id":"codenote.notes","name":"Study"}]},
     "viewsWelcome": [{"view":"codenote.notes","contents":"Notes that live with your code.\n[Insert Note](command:codenote.insertNote)\n[Find Notes](command:codenote.searchWorkspace)\n[Review Due](command:codenote.startReview)"}],
     "menus": {
       "view/title": [
@@ -69,7 +69,7 @@
         "codenote.inlineKindHints":{"type":"boolean","default":false,"description":"Show small semantic labels such as Warning or Quiz in automatic inline visual notes."},
         "codenote.inlineShowTags":{"type":"boolean","default":false,"description":"Show note tags in automatic inline visual notes."},
         "codenote.inlineRenderDelay":{"type":"number","default":18,"minimum":0,"maximum":250,"description":"Debounce delay in milliseconds for automatic inline rendering after caret movement."},
-        "codenote.workspaceIndexMaxFiles":{"type":"number","default":750,"minimum":25,"maximum":10000,"description":"Maximum source files .cnote scans when building the workspace notebook index."},
+        "codenote.workspaceIndexMaxFiles":{"type":"number","default":750,"minimum":25,"maximum":10000,"description":"Maximum source files .cnote scans when building the workspace note index."},
         "codenote.cppStandard":{"type":"string","enum":["c++17","c++20","c++23"],"default":"c++20","description":"C++ standard used by the optional Run Current File command."},
         "codenote.runCommands":{"type":"object","default":{},"description":"Optional custom run commands keyed by VS Code language id.","additionalProperties":{"type":"string"}},
         "codenote.snap.defaultTemplate":{"type":"string","enum":["aurora","midnight","sunset","forest","paper","minimal","ocean","lavender"],"default":"aurora","description":"Default visual template for .cnote Snap Studio."},

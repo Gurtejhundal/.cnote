@@ -1,16 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as crypto from 'crypto';
-import { exec } from 'child_process';
-
-export interface RunOutput {
-  ok: boolean;
-  output: string;
-  code?: number | null;
-}
 
 const DEFAULT_RUNNERS = new Set([
   'cpp', 'c', 'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -33,41 +25,7 @@ export async function runDocument(document: vscode.TextDocument): Promise<void> 
   await runPath(document, document.uri.fsPath, path.dirname(document.uri.fsPath), `Run ${path.basename(document.uri.fsPath)}`);
 }
 
-export async function runCodeCell(document: vscode.TextDocument, code: string, label: string): Promise<void> {
-  if (!requireTrustedWorkspace()) return;
-  if (document.isUntitled) {
-    vscode.window.showErrorMessage('Save the file before running cells.');
-    return;
-  }
-  const temp = await writeTempCell(document, code);
-  await runPath(document, temp, path.dirname(document.uri.fsPath), `Run ${label}`, temp);
-}
-
-export async function runCodeCellOutput(document: vscode.TextDocument, code: string): Promise<RunOutput> {
-  if (!requireTrustedWorkspace()) return { ok: false, output: 'Code running is disabled until this workspace is trusted.' };
-  if (document.isUntitled) return { ok: false, output: 'Save the file before running cells.' };
-  const temp = await writeTempCell(document, code);
-  const command = buildRunCommand(document.languageId, temp);
-  try {
-    if (!command) return { ok: false, output: `No runner for ${document.languageId}. Add codenote.runCommands.${document.languageId} in Settings.` };
-    return await executeCaptured(command, path.dirname(document.uri.fsPath));
-  } finally {
-    void fs.unlink(temp).catch(() => undefined);
-  }
-}
-
-async function writeTempCell(document: vscode.TextDocument, code: string): Promise<string> {
-  const source = document.uri.fsPath;
-  const ext = path.extname(source) || extensionForLanguage(document.languageId);
-  const safeBase = path.basename(source, path.extname(source)).replace(/[^A-Za-z0-9_.-]/g, '-');
-  const dir = path.join(os.tmpdir(), 'codenote-cells');
-  const temp = path.join(dir, `${safeBase}-${Date.now()}${ext}`);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(temp, code.replace(/\s+$/, '') + '\n', 'utf8');
-  return temp;
-}
-
-async function runPath(document: vscode.TextDocument, source: string, cwd: string, name: string, cleanupPath?: string): Promise<void> {
+async function runPath(document: vscode.TextDocument, source: string, cwd: string, name: string): Promise<void> {
   const command = buildRunCommand(document.languageId, source);
   if (!command) {
     const action = await vscode.window.showInformationMessage(
@@ -85,18 +43,9 @@ async function runPath(document: vscode.TextDocument, source: string, cwd: strin
   const taskScope = vscode.workspace.getWorkspaceFolder(document.uri) ?? vscode.TaskScope.Global;
   const task = new vscode.Task({ type: 'codenote', language: document.languageId }, taskScope, name, 'CodeNote', execution, []);
   task.presentationOptions = { reveal: vscode.TaskRevealKind.Always, panel: vscode.TaskPanelKind.Dedicated, clear: true, focus: true };
-
   try {
-    const execution = await vscode.tasks.executeTask(task);
-    if (cleanupPath) {
-      const disposable = vscode.tasks.onDidEndTaskProcess(event => {
-        if (event.execution !== execution) return;
-        disposable.dispose();
-        void fs.unlink(cleanupPath).catch(() => undefined);
-      });
-    }
+    await vscode.tasks.executeTask(task);
   } catch (error) {
-    if (cleanupPath) void fs.unlink(cleanupPath).catch(() => undefined);
     vscode.window.showErrorMessage(`Could not start runner: ${String(error)}`);
   }
 }
@@ -160,15 +109,6 @@ function runOutputDir(source: string): string {
   const dir = path.join(os.tmpdir(), 'codenote-runs', `${safeBase}-${hash}`);
   fsSync.mkdirSync(dir, { recursive: true });
   return dir;
-}
-
-function executeCaptured(command: string, cwd: string): Promise<RunOutput> {
-  return new Promise(resolve => {
-    exec(command, { cwd, timeout: 30000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
-      const code = typeof (error as { code?: unknown } | null)?.code === 'number' ? (error as { code: number }).code : null;
-      resolve({ ok: !error, code, output: `${stdout || ''}${stderr || ''}`.trimEnd() || (error ? `Exited with code ${code ?? 1}` : 'Done.') });
-    });
-  });
 }
 
 function extensionForLanguage(languageId: string): string {

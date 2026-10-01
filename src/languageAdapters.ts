@@ -93,3 +93,4 @@ export function wrapNoteSnippet(languageId: string, kind: string, innerLines: st
 export function buildInteractiveSnippet(languageId: string, kind: string, innerLines: string[]): string | undefined {
   return wrapNoteSnippet(languageId, kind, innerLines);
 }
+

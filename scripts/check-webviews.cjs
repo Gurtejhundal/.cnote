@@ -82,14 +82,24 @@ assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same lay
 
 
 const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
-assert.ok(studySource.includes('data-run-cell'), 'Notebook must render per-code-cell Run buttons');
-assert.ok(studySource.includes('data-debug-cell'), 'Notebook must render per-code-cell Debug buttons');
-assert.ok(studySource.includes('jsonForScript(cells)'), 'Notebook must share one serialized cell model with the webview script');
-assert.ok(studySource.includes('data-save-cell'), 'Notebook must allow saving edited cells');
-assert.ok(studySource.includes('data-delete-cell'), 'Notebook must allow removing cells');
-assert.ok(studySource.includes('data-output'), 'Notebook cell runs must render output under the cell');
-assert.ok(studySource.includes('Draft only') && studySource.includes('Write to source'), 'Notebook must expose draft/source write mode');
-assert.ok(!studySource.includes('>Source<'), 'Notebook note cards must not render Source buttons');
+assert.ok(studySource.includes('buildStudyModel'), 'Study must render from the section model');
+assert.ok(studySource.includes('.cnote Study'), 'Study webview must use Study product language');
+assert.ok(studySource.includes('Focus Notes'), 'Study must expose Focus Notes');
+assert.ok(studySource.includes('data-edit') && studySource.includes('editNote'), 'Study must allow semantic note editing');
+assert.ok(studySource.includes('data-insert') && studySource.includes('insertAtBoundary'), 'Study must insert notes at source boundaries');
+assert.ok(studySource.includes('versionMatches'), 'Study source mutations must reject stale document versions');
+assert.ok(studySource.includes('setCheckpointDone'), 'Study must track checkpoints locally');
+assert.ok(studySource.includes('Show answer') && studySource.includes('Again') && studySource.includes('Easy'), 'Study must keep quiz reveal and grading');
+assert.ok(studySource.includes('Open source'), 'Study items must jump back to source');
+assert.ok(!studySource.includes('data-run-cell'), 'Study must not render per-cell Run buttons');
+assert.ok(!studySource.includes('data-debug-cell'), 'Study must not render per-cell Debug buttons');
+assert.ok(!studySource.includes('data-save-cell'), 'Study must not render old cell Save buttons');
+assert.ok(!studySource.includes('data-delete-cell'), 'Study must not render old cell Remove buttons');
+assert.ok(!studySource.includes('Draft only') && !studySource.includes('Write to source'), 'Study must not expose old draft/write cell mode');
+
+const visualSource = fs.readFileSync(path.join(__dirname, '../out/visualMode.js'), 'utf8');
+assert.ok(!visualSource.includes('font-size: 1.28em') && !visualSource.includes('font-size: 1.14em'), 'Inline headings must not enlarge row height and overlap following notes');
+assert.ok(visualSource.includes("label && block.kind !== 'paragraph'"), 'Paragraph boundaries must not duplicate the Paragraph label beside adjacent headings');
 
 const { SettingsPanel } = load('settingsPanel.js');
 const settingsHtml = new SettingsPanel().html();

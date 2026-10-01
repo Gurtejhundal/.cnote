@@ -7,9 +7,9 @@ const concealedText = vscode.window.createTextEditorDecorationType({
   textDecoration: 'none; text-shadow: none;',
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedClosed
 });
-const heading1Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '700', textDecoration: 'none; font-size: 1.28em;' } });
-const heading2Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '700', textDecoration: 'none; font-size: 1.14em;' } });
-const heading3Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '650', textDecoration: 'none; font-size: 1.04em;' } });
+const heading1Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '700', textDecoration: 'none;' } });
+const heading2Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '700', textDecoration: 'none;' } });
+const heading3Line = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground'), fontWeight: '650', textDecoration: 'none;' } });
 const paragraphLine = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editor.foreground') } });
 const secondaryLine = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('descriptionForeground'), fontWeight: '600', textDecoration: 'none; font-size: .88em;' } });
 const warningLine = vscode.window.createTextEditorDecorationType({ before: { color: new vscode.ThemeColor('editorWarning.foreground'), fontWeight: '650' } });
@@ -165,7 +165,7 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
     let visual:VisualLine|undefined;
 
     if(lineNo===start){
-      const text=boundaryText(true,boundaryStyle,symbol,label?block.kind:undefined);
+      const text=boundaryText(true,boundaryStyle,symbol,label&&block.kind!=='paragraph'?block.kind:undefined);
       if(text)visual={style:'boundary',text};
     } else if(lineNo===end){
       const text=boundaryText(false,boundaryStyle,symbol,undefined);
@@ -317,3 +317,4 @@ function cleanInlineMarkdown(value:string):string{
     .replace(/\\([\\`*_{}\[\]()#+\-.!>])/g,'$1')
     .trimEnd();
 }
+

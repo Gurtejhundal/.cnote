@@ -6,12 +6,13 @@ import { NOTE_KINDS, NoteBlock, NoteKind, parseNoteBlocks } from './parser';
 import { CodeNoteOutlineProvider } from './outline';
 import { ReviewStore } from './review';
 import { exportStudyPdf } from './pdfExport';
-import { runCodeCellOutput, runDocument } from './runner';
+import { runDocument } from './runner';
 import { StudyPreviewManager } from './studyPreview';
 import { IndexedNote, WorkspaceNoteIndex } from './workspaceIndex';
 import { VisualModeManager } from './visualMode';
 import { SnapStudioManager } from './snapStudio';
 import { SettingsPanel } from './settingsPanel';
+import { buildStudyModel, noteLineLabel, studyLineLabel } from './studyModel';
 
 type NotePick = vscode.QuickPickItem & { noteKind: NoteKind; compact?: 'line' | 'heading' };
 type MenuPick = vscode.QuickPickItem & { command: string };
@@ -44,7 +45,6 @@ export function activate(context: vscode.ExtensionContext): void {
   let refreshUi = (): void => {};
   const notebook = new StudyPreviewManager(
     runDocument,
-    runCodeCellOutput,
     exportFileNotes,
     exportStudyPdf,
     review,
@@ -158,10 +158,10 @@ export function deactivate(): void {}
 
 async function openQuickMenu(): Promise<void> {
   const items: MenuPick[] = [
-    { label: '$(notebook) Notebook', description: 'Read notes and code from the current file', command: 'codenote.openStudyPreview' },
+    { label: '$(notebook) Study', description: 'Read notes and code by section', command: 'codenote.openStudyPreview' },
     { label: '$(history) Review', description: 'Open review questions that are due', command: 'codenote.startReview' },
     { label: '$(search) Find notes', description: 'Search notes across the workspace', command: 'codenote.searchWorkspace' },
-    { label: '$(file-pdf) Export PDF', description: 'Export the current Notebook as PDF', command: 'codenote.exportStudyPdf' },
+    { label: '$(file-pdf) Export PDF', description: 'Export the current Study view as PDF', command: 'codenote.exportStudyPdf' },
     { label: '$(graph) Workspace stats', description: 'See note and review counts', command: 'codenote.showStats' },
     { label: '$(settings-gear) Settings', description: 'Customize inline notes and Snap Studio', command: 'codenote.openSettings' }
   ];
@@ -381,7 +381,16 @@ async function exportFileNotes(document: vscode.TextDocument): Promise<void> {
     filters: { Markdown: ['md'] }
   });
   if (!target) return;
-  const body = `# ${path.basename(document.fileName)} — .cnote\n\n${blocks.map(noteToMarkdown).join('\n\n---\n\n')}\n`;
+  const model = buildStudyModel(document, blocks);
+  const sections = model.sections.map(section => {
+    const header = `## ${section.title}\n\n> ${section.implicit ? 'OVERVIEW' : 'SECTION'} · ${studyLineLabel(section.startLine, section.endLine)}`;
+    const notes = section.items
+      .filter(item => item.type === 'note')
+      .map(item => noteToMarkdown(item.block, 3))
+      .join('\n\n');
+    return notes ? `${header}\n\n${notes}` : header;
+  }).join('\n\n---\n\n');
+  const body = `# ${path.basename(document.fileName)} — .cnote Study\n\n${sections}\n`;
   await vscode.workspace.fs.writeFile(target, Buffer.from(body, 'utf8'));
 }
 
@@ -398,9 +407,9 @@ async function exportWorkspaceNotes(notes: readonly IndexedNote[]): Promise<void
   if (target) await vscode.workspace.fs.writeFile(target, Buffer.from(`# .cnote Workspace Notes\n\n${body}\n`, 'utf8'));
 }
 
-function noteToMarkdown(block: NoteBlock): string {
+function noteToMarkdown(block: NoteBlock, depth = 2): string {
   const tags = block.metadata.tags.length ? `\n\nTags: ${block.metadata.tags.map(tag => `#${tag}`).join(' ')}` : '';
-  return `## ${block.title}\n\n> ${block.kind.toUpperCase()} · line ${block.range.start.line + 1}${tags}\n\n${block.content || block.body}`;
+  return `${'#'.repeat(depth)} ${block.title}\n\n> ${block.kind.toUpperCase()} · ${noteLineLabel(block)}${tags}\n\n${block.content || block.body}`;
 }
 
 function activeSupportedDocument(): vscode.TextDocument | undefined {
@@ -424,6 +433,7 @@ function updateStatus(editor: vscode.TextEditor | undefined, status: vscode.Stat
   const count = parseNoteBlocks(editor.document).length;
   const due = index.all().filter(note => review.isDue(note.uri, note.block)).length;
   status.text = `$(notebook) ${count}${due ? ` · $(history) ${due}` : ''}`;
-  status.tooltip = `.cnote Notebook · ${count} note${count === 1 ? '' : 's'}${due ? ` · ${due} due` : ''}`;
+  status.tooltip = `.cnote Study · ${count} note${count === 1 ? '' : 's'}${due ? ` · ${due} due` : ''}`;
   status.show();
 }
+

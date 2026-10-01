@@ -1,5 +1,14 @@
 # Changelog
 
+## 7.0.0
+- Rebuild Study around `@section` boundaries with implicit Overview for files without sections.
+- Remove old code/note cell architecture, per-cell Run/Debug/Save/Remove, and Draft/Write mode.
+- Add section navigation, Focus Notes, read-only code, safe semantic note editing, safe note/section insertion, and stale document-version rejection.
+- Keep quiz reveal with Again/Hard/Good/Easy and make checkpoints local mastery checklists.
+- Export current-file Markdown in section order.
+- Fix paragraph shortcut selection and prevent inline heading/paragraph visual overlap.
+- Keep publisher metadata locked to `gurtejhundal` and update README/website for Marketplace-first install.
+
 ## 6.7.3
 - Change the Marketplace publisher ID to `gurtejhundal`.
 - Update the publisher metadata regression check and rebuilt VSIX links for 6.7.3.

@@ -7,16 +7,16 @@ export async function exportStudyPdf(document: vscode.TextDocument): Promise<voi
   const lines = documentToPdfLines(document);
   const base = path.basename(document.fileName, path.extname(document.fileName));
   const target = await vscode.window.showSaveDialog({
-    defaultUri: vscode.Uri.file(path.join(path.dirname(document.fileName), `${base}.notebook.pdf`)),
+    defaultUri: vscode.Uri.file(path.join(path.dirname(document.fileName), `${base}.study.pdf`)),
     filters: { PDF: ['pdf'] },
-    saveLabel: 'Save .cnote Notebook PDF'
+    saveLabel: 'Save .cnote Study PDF'
   });
   if (!target) return;
 
   try {
     const pdf = createSimplePdf(lines);
     await vscode.workspace.fs.writeFile(target, pdf);
-    const action = await vscode.window.showInformationMessage(`.cnote Notebook PDF saved: ${path.basename(target.fsPath)}`, 'Open PDF');
+    const action = await vscode.window.showInformationMessage(`.cnote Study PDF saved: ${path.basename(target.fsPath)}`, 'Open PDF');
     if (action === 'Open PDF') await vscode.env.openExternal(target);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -27,7 +27,7 @@ export async function exportStudyPdf(document: vscode.TextDocument): Promise<voi
 function documentToPdfLines(document: vscode.TextDocument): PdfLine[] {
   const lines: PdfLine[] = [
     { text: path.basename(document.fileName), font: 'bold', size: 22, gapAfter: 2 },
-    { text: '.cnote Notebook Export', size: 10, gapAfter: 12 }
+    { text: '.cnote Study Export', size: 10, gapAfter: 12 }
   ];
 
   for (const part of splitDocument(document)) {
@@ -115,3 +115,4 @@ function stripMarkdown(value: string): string {
     .replace(/~~([^~]+)~~/g, '$1')
     .trimEnd();
 }
+

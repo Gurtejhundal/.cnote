@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.3.vsix"><b>⬇ grab .cnote 6.7.3</b></a> &nbsp; · &nbsp;
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>⬇ grab .cnote 7.0.0</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,9 +15,9 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.3.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.3.vsix"><b>👇 Download .cnote 6.7.3 in one click ⚡</b></a><br>
-  <sub>VS Code → Extensions → … → Install from VSIX…</sub>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.0.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote 7.0.0 from Marketplace ⚡</b></a><br>
+  <sub>Manual VSIX is still available in the GitHub repo.</sub>
 </p>
 
 ---
@@ -48,10 +48,10 @@ V6.2.1 fixes multi-note drag selection. If your selection crosses several visual
 | Your situation | .cnote’s move |
 | --- | --- |
 | “these comments are a wall of text” | Headings, lists, code, checkboxes, quotes, and question/answer fields |
-| “exam tomorrow, vibes today” | **Notebook:** editable code + note cells, per-cell Run / Debug, draft mode, filters, quizzes, checkpoints |
+| “exam tomorrow, vibes today” | **Study:** section-based reading over real source, Focus Notes, quizzes, checkpoints, and safe note edits |
 | “i definitely knew this yesterday” | **Review:** Again / Hard / Good / Easy, plus due-quiz review |
-| “where did i explain binary search?” | **Workspace notebook:** search, tags, stats, and reindexing |
-| “let me send you my notes” | **Markdown exports** for file/workspace notes; **PDF** for Notebook |
+| “where did i explain binary search?” | **Workspace notes:** search, tags, stats, and reindexing |
+| “let me send you my notes” | **Markdown exports** for file/workspace notes; **PDF** for Study |
 | “this code deserves a photoshoot” | **Snap Studio:** eight templates, visual notes, 2× PNG output |
 | “i just want to run this” | **Run Current File** using your installed runtime/compiler |
 | “my editor, my rules” | Visual mode, labels, tags, boundaries, render delay, and Snap defaults |
@@ -93,9 +93,9 @@ The opening boundary carries the note's semantic glyph, so a Definition, Warning
 
 ### academic comeback mode 🧠
 
-<img src="assets/study-mode.png" alt="Real Notebook with note navigation, source code, a definition, and revealed quiz with review buttons" width="100%">
+<img src="assets/study-mode.png" alt="Real Study view with section navigation, source code, a definition, and revealed quiz with review buttons" width="100%">
 
-Read in order. Edit cells in draft mode, run code with output under the cell, then choose whether to write changes back to the source file. Reveal answers and export when you’re done.
+Read by section. Code is read-only, notes edit through safe source updates, Run File stays global, Focus Notes hides code when you only want concepts, and quizzes keep Again / Hard / Good / Easy review.
 
 ### screenshot it like you mean it 📸
 
@@ -114,7 +114,7 @@ Set width, spacing, font size, line numbers, window dots, and branding. Save a 2
 | Action | Windows / Linux | macOS |
 | --- | --- | --- |
 | Insert Note | `Ctrl + Shift + F6` | `Cmd + Shift + F6` |
-| Open Notebook | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
+| Open Study | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
 | Snap Code | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
 
 Fast typing: type `--` then Space for a one-line note, `#` then Space for a heading, or `!!` then Space for a multiline paragraph block. More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. Commands are also available in the VS Code Command Palette.
@@ -129,11 +129,9 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.7.3.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.3.vsix).
-2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
-3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
-
-No Marketplace listing is required. This is a direct VSIX install.
+1. Install [**.cnote on the Visual Studio Marketplace**](https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote).
+2. Open a supported source file and hit **Ctrl/Cmd + Shift + F6** to insert a note.
+3. Use **Ctrl/Cmd + Shift + F7** for Study. Manual VSIX fallback: [codenote-7.0.0.vsix](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.0.0.vsix).
 
 ## fork it. break it. improve it. 🛠️
 

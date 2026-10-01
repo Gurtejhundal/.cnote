@@ -69,6 +69,14 @@ export class ReviewStore {
   async reset(uri: vscode.Uri, block: NoteBlock): Promise<void> {
     await this.state.update(`review:${this.key(uri, block)}`, undefined);
   }
+
+  isCheckpointDone(uri: vscode.Uri, block: NoteBlock, index: number): boolean {
+    return this.state.get<boolean>(`checkpoint:${this.key(uri, block)}:${index}`, false);
+  }
+
+  async setCheckpointDone(uri: vscode.Uri, block: NoteBlock, index: number, done: boolean): Promise<void> {
+    await this.state.update(`checkpoint:${this.key(uri, block)}:${index}`, done || undefined);
+  }
 }
 
 function fingerprint(value: string): string {
@@ -79,3 +87,4 @@ function fingerprint(value: string): string {
   }
   return (hash >>> 0).toString(36);
 }
+
