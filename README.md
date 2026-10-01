@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>⬇ grab .cnote 7.1.4</b></a> &nbsp; · &nbsp;
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>⬇ grab .cnote</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.4.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote 7.1.4 from Marketplace ⚡</b></a><br>
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote from Marketplace ⚡</b></a><br>
   <sub>Manual VSIX is still available in the GitHub repo.</sub>
 </p>
 
