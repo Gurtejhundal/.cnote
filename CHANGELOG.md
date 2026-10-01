@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.7.3
+- Change the Marketplace publisher ID to `gurtejhundal`.
+- Update the publisher metadata regression check and rebuilt VSIX links for 6.7.3.
+
 ## 6.7.2
 - Tighten website desktop density so the hero CTA fits short wide viewports.
 - Harden note parsing so annotation-looking text inside strings is ignored.
