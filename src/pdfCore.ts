@@ -113,7 +113,7 @@ function pageToStream(lines: PlacedLine[], pageNumber: number, pageCount: number
     const fontName = line.font === 'bold' ? 'F2' : line.font === 'mono' ? 'F3' : 'F1';
     commands.push(`BT /${fontName} ${line.size.toFixed(2)} Tf ${line.x.toFixed(2)} ${line.y.toFixed(2)} Td (${escapePdfString(line.text)}) Tj ET`);
   }
-  const footer = `.cnote 6  |  ${pageNumber}/${pageCount}`;
+  const footer = `.cnote  |  ${pageNumber}/${pageCount}`;
   commands.push(`0.45 g BT /F1 8 Tf ${MARGIN_X.toFixed(2)} 24 Td (${escapePdfString(footer)}) Tj ET 0 g`);
   return commands.join('\n');
 }
@@ -151,7 +151,7 @@ function sanitizeText(value: string): string {
   const replacements: Record<string, string> = {
     '“': '"', '”': '"', '„': '"', '’': "'", '‘': "'", '–': '-', '—': '-', '…': '...',
     '→': '->', '←': '<-', '⇒': '=>', '≤': '<=', '≥': '>=', '≠': '!=', '×': 'x', '•': '-', '·': '-',
-    '✓': '[x]', '✗': '[ ]', 'π': 'pi', 'Ω': 'Omega', 'θ': 'theta', 'λ': 'lambda'
+    '✓': '[x]', '☑': '[x]', '□': '[ ]', '✗': '[ ]', 'π': 'pi', 'Ω': 'Omega', 'θ': 'theta', 'λ': 'lambda'
   };
   let out = '';
   for (const char of value) {

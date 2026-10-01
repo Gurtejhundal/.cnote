@@ -37,7 +37,7 @@ export class WorkspaceNoteIndex implements vscode.Disposable {
       this.emitter.fire();
     };
     this.scanPromise = (async () => {
-      if (showProgress) await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'CodeNote: indexing workspace…' }, job);
+      if (showProgress) await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: '.cnote: indexing workspace…' }, job);
       else await job();
     })();
     try { await this.scanPromise; }

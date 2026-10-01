@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.1.0 - 2026-10-01
+
+- Export Study PDFs from the section Study model instead of the old flat note/code splitter.
+- Share note presentation between Study and PDF exports for duplicate-heading cleanup, quizzes, and checkpoints.
+- Polish Study with overflow actions, code copy buttons, Focus Notes placeholders, editable-note keyboard shortcuts, Study line-number/sidebar/focus settings, and safer checkpoint rendering.
+- Rename command palette titles to the `.cnote:` product naming and `Annotate Selection`.
+- Add Study model coverage to CI and expand webview regressions for Study/PDF/settings/command naming.
+
 ## 7.0.0
 - Rebuild Study around `@section` boundaries with implicit Overview for files without sections.
 - Remove old code/note cell architecture, per-cell Run/Debug/Save/Remove, and Draft/Write mode.

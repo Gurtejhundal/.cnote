@@ -83,6 +83,10 @@ assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same lay
 
 const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
 assert.ok(studySource.includes('buildStudyModel'), 'Study must render from the section model');
+assert.ok(studySource.includes('presentNote'), 'Study must render notes through the shared presentation helper');
+assert.ok(studySource.includes('data-copy-code'), 'Study code blocks must expose copy actions');
+assert.ok(studySource.includes('code-placeholder'), 'Focus Notes must leave code placeholders instead of making code vanish');
+assert.ok(studySource.includes('study.defaultFocusNotes') && studySource.includes('study.lineNumbers'), 'Study must read Study-specific settings');
 assert.ok(studySource.includes('.cnote Study'), 'Study webview must use Study product language');
 assert.ok(studySource.includes('Focus Notes'), 'Study must expose Focus Notes');
 assert.ok(studySource.includes('data-edit') && studySource.includes('editNote'), 'Study must allow semantic note editing');
@@ -106,7 +110,18 @@ const settingsHtml = new SettingsPanel().html();
 assert.ok(settingsHtml.includes('shortcut.noteTrigger'), 'Settings must expose note shortcut trigger');
 assert.ok(settingsHtml.includes('shortcut.headingTrigger'), 'Settings must expose heading shortcut trigger');
 assert.ok(settingsHtml.includes('shortcut.paragraphTrigger'), 'Settings must expose paragraph shortcut trigger');
+assert.ok(settingsHtml.includes('study.defaultFocusNotes'), 'Settings must expose Study Focus Notes default');
+assert.ok(settingsHtml.includes('study.showSidebar'), 'Settings must expose Study sidebar default');
+assert.ok(settingsHtml.includes('study.lineNumbers'), 'Settings must expose Study line number default');
 const settingsScript = settingsHtml.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new vm.Script(settingsScript), 'Settings webview must contain valid JavaScript');
 
-console.log('Webviews parse; Snap preview, templates, escaping, and PNG export checks pass.');
+const pdfSource = fs.readFileSync(path.join(__dirname, '../out/pdfExport.js'), 'utf8');
+assert.ok(pdfSource.includes('buildStudyModel'), 'PDF export must use the section Study model');
+assert.ok(pdfSource.includes('presentNote'), 'PDF export must use the shared note presentation helper');
+
+const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+assert.ok(pkg.contributes.commands.every(c => c.title.startsWith('.cnote:')), 'Command Palette titles must use .cnote product naming');
+assert.ok(pkg.contributes.commands.some(c => c.title === '.cnote: Annotate Selection'), 'Selection annotation command must use the v7 name');
+
+console.log('Webviews parse; Snap, Study, Settings, PDF, and command checks pass.');

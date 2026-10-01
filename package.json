@@ -2,7 +2,7 @@
   "name": "codenote",
   "displayName": ".cnote",
   "description": "Write visual Markdown notes inside real source files, study them by section, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "publisher": "gurtejhundal",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
@@ -19,21 +19,21 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      {"command":"codenote.insertNote","title":"CodeNote: Insert Note","icon":"$(edit)"},
-      {"command":"codenote.annotateSelection","title":"CodeNote: Explain Selected Code"},
-      {"command":"codenote.openStudyPreview","title":"CodeNote: Open Study","icon":"$(book-open)"},
-      {"command":"codenote.openQuickMenu","title":"CodeNote: .cnote Menu","icon":"$(notebook)"},
-      {"command":"codenote.runFile","title":"CodeNote: Run Current File","icon":"$(play)"},
-      {"command":"codenote.openSnapStudio","title":"CodeNote: Snap Code","icon":"$(device-camera)"},
-      {"command":"codenote.openSettings","title":"CodeNote: Settings","icon":"$(settings-gear)"},
-      {"command":"codenote.exportNotes","title":"CodeNote: Export Current File Notes"},
-      {"command":"codenote.exportStudyPdf","title":"CodeNote: Export Study PDF","icon":"$(file-pdf)"},
-      {"command":"codenote.exportWorkspaceNotes","title":"CodeNote: Export Workspace Notes"},
-      {"command":"codenote.searchWorkspace","title":"CodeNote: Find Notes"},
-      {"command":"codenote.startReview","title":"CodeNote: Review Due Quizzes"},
-      {"command":"codenote.showStats","title":"CodeNote: Workspace Stats"},
-      {"command":"codenote.rescanWorkspace","title":"CodeNote: Reindex Workspace"},
-      {"command":"codenote.refreshOutline","title":"CodeNote: Refresh"}
+      {"command":"codenote.insertNote","title":".cnote: Insert Note","icon":"$(edit)"},
+      {"command":"codenote.annotateSelection","title":".cnote: Annotate Selection"},
+      {"command":"codenote.openStudyPreview","title":".cnote: Open Study","icon":"$(book-open)"},
+      {"command":"codenote.openQuickMenu","title":".cnote: .cnote Menu","icon":"$(notebook)"},
+      {"command":"codenote.runFile","title":".cnote: Run Current File","icon":"$(play)"},
+      {"command":"codenote.openSnapStudio","title":".cnote: Snap Code","icon":"$(device-camera)"},
+      {"command":"codenote.openSettings","title":".cnote: Settings","icon":"$(settings-gear)"},
+      {"command":"codenote.exportNotes","title":".cnote: Export Current File Notes"},
+      {"command":"codenote.exportStudyPdf","title":".cnote: Export Study PDF","icon":"$(file-pdf)"},
+      {"command":"codenote.exportWorkspaceNotes","title":".cnote: Export Workspace Notes"},
+      {"command":"codenote.searchWorkspace","title":".cnote: Find Notes"},
+      {"command":"codenote.startReview","title":".cnote: Review Due Quizzes"},
+      {"command":"codenote.showStats","title":".cnote: Workspace Stats"},
+      {"command":"codenote.rescanWorkspace","title":".cnote: Reindex Workspace"},
+      {"command":"codenote.refreshOutline","title":".cnote: Refresh"}
     ],
     "keybindings": [
       {"command":"codenote.insertNote","key":"ctrl+shift+f6","mac":"cmd+shift+f6","when":"editorTextFocus && codenote.supportedEditor"},
@@ -81,7 +81,10 @@
         "codenote.inlineBoundaryLabel":{"type":"boolean","default":false,"description":"Show the note type beside the opening inline boundary marker."},
         "codenote.shortcut.noteTrigger":{"type":"string","default":"--","description":"Text typed at the start of a line followed by Space to create a one-line .cnote note."},
         "codenote.shortcut.headingTrigger":{"type":"string","default":"#","description":"Text typed at the start of a line followed by Space to create a one-line .cnote heading."},
-        "codenote.shortcut.paragraphTrigger":{"type":"string","default":"!!","description":"Text typed at the start of a line followed by Space to create a multiline .cnote paragraph block."}
+        "codenote.shortcut.paragraphTrigger":{"type":"string","default":"!!","description":"Text typed at the start of a line followed by Space to create a multiline .cnote paragraph block."},
+        "codenote.study.defaultFocusNotes":{"type":"boolean","default":false,"description":"Open Study with Focus Notes enabled by default."},
+        "codenote.study.showSidebar":{"type":"boolean","default":true,"description":"Show the section navigation sidebar in Study."},
+        "codenote.study.lineNumbers":{"type":"boolean","default":true,"description":"Show source line numbers inside Study code blocks."}
       }
     }
   },
