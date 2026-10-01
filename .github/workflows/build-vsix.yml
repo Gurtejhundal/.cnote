@@ -40,6 +40,9 @@ jobs:
       - name: Check generated webview scripts
         run: node scripts/check-webviews.cjs
 
+      - name: Check Study webview runtime
+        run: node scripts/check-study-webview.cjs
+
       - name: Check Study model
         run: node scripts/check-study-model.cjs
 
