@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.1.2 - 2026-10-01
+
+- Remove Study section metadata under headings so section title and intro read as one clean block.
+- Make Study definition titles match section heading scale.
+- Replace Study code-cell text buttons with icon buttons, remove Copy, and add comment/decomment support with Ctrl+/.
+- Add lightweight Study code colouring and fix code-cell line number alignment.
+- Stop Visual Mode from duplicating Section/Definition labels on boundary markers; definition headings now render like normal headings.
+
 ## 7.1.1 - 2026-10-01
 
 - Simplify Study: notes render as plain reading text and only code renders as editable cells.

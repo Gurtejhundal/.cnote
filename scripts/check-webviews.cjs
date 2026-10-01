@@ -84,7 +84,9 @@ assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same lay
 const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
 assert.ok(studySource.includes('buildStudyModel'), 'Study must render from the section model');
 assert.ok(studySource.includes('presentNote'), 'Study must render notes through the shared presentation helper');
-assert.ok(studySource.includes('data-copy-code'), 'Study code blocks must expose copy actions');
+assert.ok(!studySource.includes('data-copy-code'), 'Study code blocks must not show a Copy button');
+assert.ok(studySource.includes('data-comment-code') && studySource.includes('toggleComment'), 'Study code cells must expose comment toggling');
+assert.ok(studySource.includes('code-highlight') && studySource.includes('paintLine'), 'Study code cells must provide lightweight syntax colouring');
 assert.ok(studySource.includes('data-run-code') && studySource.includes('runCode'), 'Study code cells must run inline');
 assert.ok(studySource.includes('data-apply-code') && studySource.includes('applyCode'), 'Study code cells must be editable and apply back to source');
 assert.ok(studySource.includes('code-placeholder'), 'Focus Notes must leave code placeholders instead of making code vanish');
@@ -105,7 +107,7 @@ assert.ok(!studySource.includes('Draft only') && !studySource.includes('Write to
 
 const visualSource = fs.readFileSync(path.join(__dirname, '../out/visualMode.js'), 'utf8');
 assert.ok(!visualSource.includes('font-size: 1.28em') && !visualSource.includes('font-size: 1.14em'), 'Inline headings must not enlarge row height and overlap following notes');
-assert.ok(visualSource.includes("label && block.kind !== 'paragraph'"), 'Paragraph boundaries must not duplicate the Paragraph label beside adjacent headings');
+assert.ok(visualSource.includes("!['paragraph', 'section', 'definition'].includes(kind)"), 'Title-style notes must not duplicate boundary labels');
 
 const { SettingsPanel } = load('settingsPanel.js');
 const settingsHtml = new SettingsPanel().html();

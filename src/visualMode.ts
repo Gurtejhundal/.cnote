@@ -165,7 +165,7 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
     let visual:VisualLine|undefined;
 
     if(lineNo===start){
-      const text=boundaryText(true,boundaryStyle,symbol,label&&block.kind!=='paragraph'?block.kind:undefined);
+      const text=boundaryText(true,boundaryStyle,symbol,boundaryLabel(block.kind,label));
       if(text)visual={style:'boundary',text};
     } else if(lineNo===end){
       const text=boundaryText(false,boundaryStyle,symbol,undefined);
@@ -177,6 +177,10 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
 
     if(visual)pushVisual(result,visual,renderAtLine(document,lineNo,visual.text));
   }
+}
+
+function boundaryLabel(kind:string,label:boolean):string|undefined{
+  return label && !['paragraph','section','definition'].includes(kind) ? kind : undefined;
 }
 
 function boundaryText(start:boolean,style:string,symbol:string,label:string|undefined):string{
@@ -255,6 +259,7 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
       input:'→ Input',
       result:'← Result'
     };
+    if(kind==='definition'&&key==='meaning')return{style:'paragraph',text:`Meaning: ${value}`};
     const style:VisualStyle=key==='question'?'h3':key==='risk'?'warning':key==='meaning'?'secondary':'paragraph';
     return{style,text:`${prefix[key]||prettyKind(key)} · ${value}`};
   }
@@ -272,7 +277,7 @@ function unwrapDashNote(value:string):string{
 }
 
 function decorateHeading(kind:string,text:string):string{
-  if(kind==='definition')return`≡ ${text}`;
+  if(kind==='definition')return text;
   if(kind==='warning')return`⚠ ${text}`;
   if(kind==='complexity')return`⏱ ${text}`;
   if(kind==='quiz')return`? ${text}`;
