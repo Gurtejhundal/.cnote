@@ -40,6 +40,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # repair-study-runtime.py intentionally edits build-vsix locally so the
+          # new smoke test is exercised in this job, but this Actions token is
+          # not allowed to push workflow-file changes. Restore that file before
+          # committing/rebasing; we update it separately through the repo API.
+          git restore .github/workflows/build-vsix.yml
           git add src/studyPreview.ts scripts/check-study-webview.cjs package.json package-lock.json README.md CHANGELOG.md
           git commit -m "Fix Study cell runtime and shortcuts in 7.1.7"
           git pull --rebase origin main
