@@ -86,7 +86,11 @@ assert.ok(studySource.includes('buildStudyModel'), 'Study must render from the s
 assert.ok(studySource.includes('presentNote'), 'Study must render notes through the shared presentation helper');
 assert.ok(!studySource.includes('data-copy-code'), 'Study code blocks must not show a Copy button');
 assert.ok(studySource.includes('data-comment-code') && studySource.includes('toggleComment'), 'Study code cells must expose comment toggling');
-assert.ok(studySource.includes('code-highlight') && studySource.includes('paintLine'), 'Study code cells must provide lightweight syntax colouring');
+assert.ok(!studySource.includes('code-highlight') && !studySource.includes('paintLine'), 'Study code cells must not use the fragile hidden overlay highlighter');
+assert.ok(studySource.includes('code-input') && studySource.includes('color:var(--vscode-editor-foreground)'), 'Study code cells must keep editable code text visible');
+assert.ok(!studySource.includes('color:transparent') && !studySource.includes('-webkit-text-fill-color'), 'Study code cells must not hide textarea text');
+assert.ok(studySource.includes('markStale') && studySource.includes("type:'refresh'") && studySource.includes('stale-badge'), 'Study must use manual refresh instead of rerendering on every edit');
+assert.ok(!studySource.includes('this.render(event.document)'), 'Study must not rebuild the webview on every source edit');
 assert.ok(studySource.includes('data-run-code') && studySource.includes('runCode'), 'Study code cells must run inline');
 assert.ok(studySource.includes('data-apply-code') && studySource.includes('applyCode'), 'Study code cells must be editable and apply back to source');
 assert.ok(studySource.includes('code-placeholder'), 'Focus Notes must leave code placeholders instead of making code vanish');

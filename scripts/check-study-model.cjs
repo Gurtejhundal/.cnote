@@ -50,6 +50,7 @@ function doc(text, languageId = 'cpp') {
 
 const { parseNoteBlocks } = load('parser.js');
 const { buildStudyModel } = load('studyModel.js');
+const { presentNote } = load('notePresentation.js');
 
 let source = `int before;\n/* @note\n# Setup\nUse this first.\n*/\nint after;`;
 let document = doc(source);
@@ -79,7 +80,16 @@ assert.equal(model.sections.length, 1);
 assert.equal(model.sections[0].title, 'Syntax');
 assert.equal(JSON.stringify(model.sections[0].items.map(item => item.type === 'note' ? item.block.kind : 'code')), JSON.stringify(['note', 'code']));
 
-console.log('Study model section, overview, ordering, and due-count checks pass.');
+source = `/* @definition
+for each
+Meaning: loop over each item.
+*/`;
+document = doc(source);
+const definition = presentNote(parseNoteBlocks(document)[0]);
+assert.equal(definition.title, 'for each');
+assert.equal(definition.body.trim(), 'Meaning: loop over each item.');
+
+console.log('Study model section, overview, ordering, due-count, and definition title checks pass.');
 
 
 

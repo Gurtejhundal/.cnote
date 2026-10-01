@@ -229,6 +229,8 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
     return{style:depth===1?'h1':depth===2?'h2':'h3',text:decorateHeading(kind,cleanHeading)};
   }
 
+  if(kind==='definition' && stripMarkdownForCompare(trimmed) === stripMarkdownForCompare(block.title))return{style:'h1',text:cleanInlineMarkdown(trimmed.replace(/^#{1,6}\s+/,''))};
+
   if(/^```/.test(trimmed))return{style:'secondary',text:'⋯'};
 
   const quote=raw.match(/^\s*>\s?(.*)$/);
@@ -270,6 +272,11 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
   if(kind==='example')return{style:'paragraph',text:`↪ ${clean}`};
   if(kind==='warning')return{style:'warning',text:clean};
   return{style:'paragraph',text:clean};
+}
+
+
+function stripMarkdownForCompare(value:string):string{
+  return cleanInlineMarkdown(value).replace(/^#+\s*/, '').replace(/\s+/g,' ').trim();
 }
 
 function unwrapDashNote(value:string):string{

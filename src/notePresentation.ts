@@ -50,9 +50,11 @@ function removeDuplicateHeading(block: NoteBlock): string {
   const lines = (block.content || block.body).split(/\r?\n/);
   const first = lines.findIndex(line => line.trim().length > 0);
   if (first < 0) return block.content || block.body;
-  const heading = lines[first].trim().match(/^#{1,6}\s+(.+)$/);
-  if (!heading) return block.content || block.body;
-  if (stripMarkdown(heading[1]) !== stripMarkdown(block.title)) return block.content || block.body;
+  const firstLine = lines[first].trim();
+  const heading = firstLine.match(/^#{1,6}\s+(.+)$/);
+  const duplicate = heading ? heading[1] : block.kind === 'definition' ? firstLine : '';
+  if (!duplicate) return block.content || block.body;
+  if (stripMarkdown(duplicate) !== stripMarkdown(block.title)) return block.content || block.body;
   lines.splice(first, 1);
   return lines.join('\n').replace(/^\s*\r?\n/, '');
 }

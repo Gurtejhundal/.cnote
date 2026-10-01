@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.1.3 - 2026-10-01
+
+- Fix blank Study code cells by removing the fragile transparent textarea/highlight overlay.
+- Stop Study from rebuilding on every source edit; file changes now mark Study stale and use the Refresh button.
+- Treat the first plain line in `@definition` as the definition title and remove it from the body.
+- Keep Study code cells editable, visible, line-numbered, runnable, and comment-toggleable.
+
 ## 7.1.2 - 2026-10-01
 
 - Remove Study section metadata under headings so section title and intro read as one clean block.
