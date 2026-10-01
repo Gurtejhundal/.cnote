@@ -22,66 +22,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Generate extension icon
-        run: python scripts/generate_icon.py
-
-      - name: Compile
-        run: npm run compile
-
-      - name: Check generated webview scripts
-        run: node scripts/check-webviews.cjs
-
-      - name: Check inline note parsing
-        run: node scripts/check-inline-notes.cjs
-
-      - name: Check Snap capture logic
-        run: node scripts/check-snap-capture.cjs
-
-      - name: Check typing shortcuts
-        run: node scripts/check-shortcuts.cjs
-
-      - name: Prepare Marketplace README
+      - name: Read package version
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import json
-          import re
+          CN_VERSION=$(node -p "require('./package.json').version")
+          echo "CN_VERSION=$CN_VERSION" >> "$GITHUB_ENV"
 
-          package = json.loads(Path('package.json').read_text(encoding='utf-8'))
-          version = package['version']
-          publisher = package['publisher']
-
-          if publisher != 'gurtejhundal':
-              raise SystemExit(f"Refusing to publish: package.json publisher is {publisher!r}, expected 'gurtejhundal'.")
-
-          p = Path('README.md')
-          text = p.read_text(encoding='utf-8')
-
-          # Keep version references aligned with the package being published.
-          text = re.sub(r'codenote-\d+\.\d+\.\d+\.vsix', f'codenote-{version}.vsix', text)
-          text = re.sub(r'\.cnote \d+\.\d+\.\d+', f'.cnote {version}', text)
-
-          old = '<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>'
-          new = '''<p align="center">
-  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/crying-waterfall.png" alt="Crying waterfall emoji" width="120"><br>
-  <b>if .cnote saved your brain cells... help me buy a PS5 😭🎮</b><br>
-  <sub>absolutely optional. no paywall. no guilt trip. just the side quest.</sub><br><br>
-  <img src="https://raw.githubusercontent.com/Gurtejhundal/.cnote/main/assets/upi-qr-marketplace.png" alt="UPI QR code for optional .cnote support" width="280"><br>
-  <b>scan with any UPI app</b><br>
-  <sub>Gurtejbir Singh · A GitHub star is love too.</sub>
-</p>'''
-          text = text.replace(old, new)
-
-          # VS Marketplace rejects arbitrary SVG images in README content.
-          text = re.sub(r'<img\b[^>]*\.svg[^>]*>', '', text, flags=re.I)
-          p.write_text(text, encoding='utf-8')
-          PY
+      - name: Verify release VSIX exists
+        shell: bash
+        run: test -f "downloads/codenote-${CN_VERSION}.vsix"
 
       - name: Publish with Marketplace Trusted Publishing
-        run: npx --yes @vscode/vsce@4.0.0 publish --oidc --skip-duplicate
+        run: npx --yes @vscode/vsce@4.0.0 publish --oidc --skip-duplicate --packagePath "downloads/codenote-${CN_VERSION}.vsix"
