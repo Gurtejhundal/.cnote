@@ -54,7 +54,6 @@ const scriptMatch = html.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/);
 assert.ok(scriptMatch, 'Snap webview must include a script');
 assert.doesNotThrow(() => new vm.Script(scriptMatch[1]), 'Snap webview must contain valid JavaScript');
 
-// Preview and templates are rendered by the extension itself, so they remain visible even if JS initialization fails.
 assert.ok(html.includes('theme-aurora'), 'Snap must render the Aurora template button');
 assert.ok(html.includes('theme-midnight'), 'Snap must render the Midnight template button');
 assert.ok(html.includes('theme-lavender'), 'Snap must render the Lavender template button');
@@ -79,8 +78,6 @@ assert.ok(!html.includes('pre-wrap'), 'Preview must preserve fixed source rows')
 const layoutCalls = html.match(/layoutMetrics\(s, D\.lines\.length\)/g) || [];
 assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same layout model');
 
-
-
 const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
 assert.ok(studySource.includes('buildStudyModel'), 'Study must render from the section model');
 assert.ok(studySource.includes('presentNote'), 'Study must render notes through the shared presentation helper');
@@ -93,6 +90,9 @@ assert.ok(studySource.includes('markStale') && studySource.includes("type:'refre
 assert.ok(!studySource.includes('this.render(event.document)'), 'Study must not rebuild the webview on every source edit');
 assert.ok(studySource.includes('data-run-code') && studySource.includes('runCode'), 'Study code cells must run inline');
 assert.ok(studySource.includes('data-apply-code') && studySource.includes('applyCode'), 'Study code cells must be editable and apply back to source');
+assert.ok(studySource.includes("event.key==='Enter'") && studySource.includes("key==='s'") && studySource.includes("event.key==='Tab'"), 'Study code cells must support run/apply/indent keyboard shortcuts');
+assert.ok(studySource.includes('duplicateLines') && studySource.includes('moveLines') && studySource.includes('deleteLines'), 'Study code cells must support core editor-like line shortcuts');
+assert.ok(studySource.includes("document.addEventListener('click'"), 'Study cell icon controls must use delegated click handling');
 assert.ok(!studySource.includes('CSS.escape'), 'Study webview must not depend on CSS.escape for button handlers');
 assert.ok(studySource.includes('code-placeholder'), 'Focus Notes must leave code placeholders instead of making code vanish');
 assert.ok(studySource.includes('study.defaultFocusNotes') && studySource.includes('study.lineNumbers'), 'Study must read Study-specific settings');
@@ -104,16 +104,19 @@ assert.ok(studySource.includes('versionMatches'), 'Study source mutations must r
 assert.ok(studySource.includes('setCheckpointDone'), 'Study must track checkpoints locally');
 assert.ok(studySource.includes('Show answer') && studySource.includes('Again') && studySource.includes('Easy'), 'Study must keep quiz reveal and grading');
 assert.ok(studySource.includes('data-reveal'), 'Study code cells must jump back to source');
-assert.ok(!studySource.includes('data-run-cell'), 'Study must not render per-cell Run buttons');
+assert.ok(!studySource.includes('data-run-cell'), 'Study must not render the legacy per-cell Run control');
 assert.ok(!studySource.includes('data-debug-cell'), 'Study must not render per-cell Debug buttons');
 assert.ok(!studySource.includes('data-save-cell'), 'Study must not render old cell Save buttons');
 assert.ok(!studySource.includes('data-delete-cell'), 'Study must not render old cell Remove buttons');
 assert.ok(!studySource.includes('Draft only') && !studySource.includes('Write to source'), 'Study must not expose old draft/write cell mode');
 
 const visualSource = fs.readFileSync(path.join(__dirname, '../out/visualMode.js'), 'utf8');
+const visualPlanSource = fs.readFileSync(path.join(__dirname, '../out/inlineVisualPlan.js'), 'utf8');
 assert.ok(!visualSource.includes('font-size: 1.28em') && !visualSource.includes('font-size: 1.14em'), 'Inline headings must not enlarge row height and overlap following notes');
-assert.ok(visualSource.includes("!['paragraph', 'section', 'definition'].includes(kind)"), 'Title-style notes must not duplicate boundary labels');
+assert.ok(visualPlanSource.includes("!['paragraph', 'section', 'definition'].includes(kind)"), 'Title-style notes must not duplicate boundary labels');
 assert.ok(visualSource.includes("opacity: '0'"), 'Inline visual concealment must hide syntax-highlighted source tokens');
+assert.ok(visualSource.includes('planInlineVisualBlock'), 'Inline Visual Mode must use the shared deterministic physical-line planner');
+assert.ok(visualSource.includes('new vscode.Range(lineNo, start, lineNo, start)'), 'Visual replacement text must use a zero-width anchor separate from concealed source');
 assert.ok(!visualSource.includes('collectEditingDefinitionBlock'), 'Inline visual editing state must not special-case definition blocks');
 assert.ok(!visualSource.includes("block.kind === 'definition' ? '' : boundaryText"), 'Inline visual boundaries must be generic for every multiline note kind');
 
@@ -136,4 +139,4 @@ const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 
 assert.ok(pkg.contributes.commands.every(c => c.title.startsWith('.cnote:')), 'Command Palette titles must use .cnote product naming');
 assert.ok(pkg.contributes.commands.some(c => c.title === '.cnote: Annotate Selection'), 'Selection annotation command must use the v7 name');
 
-console.log('Webviews parse; Snap, Study, Settings, PDF, and command checks pass.');
+console.log('Webviews parse; Snap, Study, Inline Visual, Settings, PDF, and command checks pass.');
