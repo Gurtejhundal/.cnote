@@ -6,7 +6,7 @@ import { NOTE_KINDS, NoteBlock, NoteKind, parseNoteBlocks } from './parser';
 import { CodeNoteOutlineProvider } from './outline';
 import { ReviewStore } from './review';
 import { exportStudyPdf } from './pdfExport';
-import { runDocument } from './runner';
+import { runCodeText, runDocument } from './runner';
 import { StudyPreviewManager } from './studyPreview';
 import { IndexedNote, WorkspaceNoteIndex } from './workspaceIndex';
 import { VisualModeManager } from './visualMode';
@@ -45,6 +45,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let refreshUi = (): void => {};
   const notebook = new StudyPreviewManager(
     runDocument,
+    runCodeText,
     exportFileNotes,
     exportStudyPdf,
     review,
@@ -265,7 +266,6 @@ async function pickNoteKind(): Promise<NotePick | undefined> {
   const items: NotePick[] = [
     { label: '✦ Note', detail: 'One plain visual line. Source stays one line.', noteKind: 'note', compact: 'line' },
     { label: '# Heading', detail: 'One highlighted heading. Source stays one line.', noteKind: 'section', compact: 'heading' },
-    { label: '¶ Paragraph', detail: 'Multiline prose block for longer notes.', noteKind: 'paragraph' },
     ...INSERT_NOTE_KINDS.map(noteKind => ({
       label: NOTE_PICK_LABELS[noteKind] ?? noteKind[0].toUpperCase() + noteKind.slice(1),
       detail: details[noteKind],

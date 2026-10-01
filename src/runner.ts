@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fsSync from 'fs';
 import * as crypto from 'crypto';
+import { exec } from 'child_process';
 
 const DEFAULT_RUNNERS = new Set([
   'cpp', 'c', 'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -12,6 +13,25 @@ const DEFAULT_RUNNERS = new Set([
 export function canRunLanguage(languageId: string): boolean {
   const custom = vscode.workspace.getConfiguration('codenote').get<Record<string, string>>('runCommands', {});
   return Boolean(custom[languageId]) || DEFAULT_RUNNERS.has(languageId);
+}
+
+
+export async function runCodeText(document: vscode.TextDocument, code: string): Promise<string> {
+  if (!requireTrustedWorkspace()) return 'Workspace is not trusted.';
+  const ext = extensionForLanguage(document.languageId);
+  const base = `${path.basename(document.fileName, path.extname(document.fileName))}-${Date.now()}`;
+  const dir = path.join(os.tmpdir(), 'codenote-cells');
+  fsSync.mkdirSync(dir, { recursive: true });
+  const source = path.join(dir, `${base}${ext}`);
+  fsSync.writeFileSync(source, code, 'utf8');
+  const command = buildRunCommand(document.languageId, source);
+  if (!command) return `No runner for ${document.languageId}. Add codenote.runCommands.${document.languageId} in Settings.`;
+  return new Promise(resolve => {
+    exec(command, { cwd: path.dirname(document.uri.fsPath), timeout: 12000, windowsHide: true }, (error, stdout, stderr) => {
+      const output = [stdout, stderr, error && !stderr ? error.message : ''].filter(Boolean).join('\n').trim();
+      resolve(output || 'Done.');
+    });
+  });
 }
 
 export async function runDocument(document: vscode.TextDocument): Promise<void> {

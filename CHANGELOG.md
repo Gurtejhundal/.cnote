@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.1.1 - 2026-10-01
+
+- Simplify Study: notes render as plain reading text and only code renders as editable cells.
+- Add per-code-cell Run with inline output plus Apply/Copy/Open actions.
+- Remove always-visible `+ Add` seams from Study.
+- Change `!! + Space` to insert a Definition block instead of Paragraph.
+- Make Snap start from the configured default template and add lightweight code colouring to Snap preview/export.
+
 ## 7.1.0 - 2026-10-01
 
 - Export Study PDFs from the section Study model instead of the old flat note/code splitter.

@@ -2,7 +2,7 @@
   "name": "codenote",
   "displayName": ".cnote",
   "description": "Write visual Markdown notes inside real source files, study them by section, review concepts, export PDF, and create aesthetic code snapshots.",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "publisher": "gurtejhundal",
   "author": {"name": "Gurtejbir Singh"},
   "license": "MIT",
@@ -81,7 +81,7 @@
         "codenote.inlineBoundaryLabel":{"type":"boolean","default":false,"description":"Show the note type beside the opening inline boundary marker."},
         "codenote.shortcut.noteTrigger":{"type":"string","default":"--","description":"Text typed at the start of a line followed by Space to create a one-line .cnote note."},
         "codenote.shortcut.headingTrigger":{"type":"string","default":"#","description":"Text typed at the start of a line followed by Space to create a one-line .cnote heading."},
-        "codenote.shortcut.paragraphTrigger":{"type":"string","default":"!!","description":"Text typed at the start of a line followed by Space to create a multiline .cnote paragraph block."},
+        "codenote.shortcut.paragraphTrigger":{"type":"string","default":"!!","description":"Text typed at the start of a line followed by Space to create a .cnote definition block."},
         "codenote.study.defaultFocusNotes":{"type":"boolean","default":false,"description":"Open Study with Focus Notes enabled by default."},
         "codenote.study.showSidebar":{"type":"boolean","default":true,"description":"Show the section navigation sidebar in Study."},
         "codenote.study.lineNumbers":{"type":"boolean","default":true,"description":"Show source line numbers inside Study code blocks."}

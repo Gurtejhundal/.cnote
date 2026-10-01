@@ -67,7 +67,7 @@ export function expandTypingShortcut(languageId: string, lineText: string, noteT
   const trimmed = lineText.trimStart();
   if (noteTrigger && trimmed === `${noteTrigger} `) return buildSingleLineNoteSnippet(languageId, 'note', '');
   if (headingTrigger && trimmed === `${headingTrigger} `) return buildSingleLineNoteSnippet(languageId, 'section', '#');
-  if (paragraphTrigger && trimmed === `${paragraphTrigger} `) return wrapNoteSnippet(languageId, 'paragraph', ['${1:Write your paragraph.}']);
+  if (paragraphTrigger && trimmed === `${paragraphTrigger} `) return wrapNoteSnippet(languageId, 'definition', ['# ${1:Concept}', 'Meaning: ${2:Write the exact definition.}']);
   return undefined;
 }
 

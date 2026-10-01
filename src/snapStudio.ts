@@ -111,7 +111,7 @@ export class SnapStudioManager implements vscode.Disposable {
     const cfg = vscode.workspace.getConfiguration('codenote');
     const stored = this.context.globalState.get<Partial<Prefs>>('codenote.snapPreferences', {});
     const initial: Prefs = {
-      theme: String(stored.theme ?? cfg.get('snap.defaultTemplate', 'aurora')),
+      theme: String(cfg.get('snap.defaultTemplate', stored.theme ?? 'aurora')),
       padding: Number(stored.padding ?? 36),
       width: Number(stored.width ?? 760),
       fontSize: Number(stored.fontSize ?? 18),
@@ -131,7 +131,7 @@ export class SnapStudioManager implements vscode.Disposable {
       const lineType = line.type || line.kind;
       const cls = `code-row ${lineType}`;
       const lineNo = line.sourceLine > 0 ? String(line.sourceLine) : '';
-      return `<div class="${cls}"><span class="ln">${escapeHtml(lineNo)}</span><span class="txt">${escapeHtml(line.text || ' ')}</span></div>`;
+      return `<div class="${cls}"><span class="ln">${escapeHtml(lineNo)}</span><span class="txt">${renderSnapHtml(line.text || ' ')}</span></div>`;
     }).join('');
 
     return `<!doctype html>
@@ -157,7 +157,7 @@ body{overflow:auto}
 .file-title{min-width:0}.file-title strong{display:block;color:var(--text);font:650 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-title small{display:block;color:var(--muted);font:500 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin-top:4px}
 .code{padding:24px 28px 32px;overflow:visible;font-family:Consolas,"Liberation Mono",monospace;font-size:18px;line-height:var(--row-h,24px)}
 .code-row{display:grid;grid-template-columns:40px minmax(0,1fr);height:var(--row-h,24px);min-height:var(--row-h,24px);max-height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;padding:0;gap:0;overflow:visible;align-items:center}.ln,.txt{display:block;height:var(--row-h,24px);min-height:var(--row-h,24px);max-height:var(--row-h,24px);line-height:var(--row-h,24px);margin:0;box-sizing:border-box;font-family:Consolas,"Liberation Mono",monospace;font-size:var(--ln-size,18px)}.ln{width:40px;padding:0 10px 0 0;text-align:right;color:var(--muted);opacity:1;user-select:none;font-weight:400;font-variant-numeric:tabular-nums}.txt{padding:0;white-space:pre;overflow:visible;color:var(--text);font-weight:500}
-.code-row.boundary .txt{color:var(--muted);font-weight:700}.code-row.heading1 .txt{font-size:1em;font-weight:800}.code-row.heading2 .txt{font-size:1em;font-weight:750}.code-row.heading3 .txt{font-size:1em;font-weight:700}.code-row.note .txt{font-weight:500}.code-row.warning .txt{color:#ffcc66;font-weight:750}.code-row.quote .txt{font-style:italic;color:var(--muted)}.code-row.meta .txt{color:var(--muted);font-size:1em}
+.tok-comment{color:#6a9955}.tok-string{color:#ce9178}.tok-keyword{color:#569cd6}.tok-type{color:#4ec9b0}.tok-number{color:#b5cea8}.tok-preproc{color:#dcdcaa}.tok-op{color:#d4d4d4}.code-row.boundary .txt{color:var(--muted);font-weight:700}.code-row.heading1 .txt{font-size:1em;font-weight:800}.code-row.heading2 .txt{font-size:1em;font-weight:750}.code-row.heading3 .txt{font-size:1em;font-weight:700}.code-row.note .txt{font-weight:500}.code-row.warning .txt{color:#ffcc66;font-weight:750}.code-row.quote .txt{font-style:italic;color:var(--muted)}.code-row.meta .txt{color:var(--muted);font-size:1em}
 .hide-lines .ln{display:none}.hide-lines .code-row{grid-template-columns:1fr}.hide-dots .dots{display:none}
 .brandmark{display:none;position:absolute;right:22px;bottom:14px;color:var(--muted);font:700 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.show-brand .brandmark{display:block}
 .controls{border-top:1px solid var(--vscode-panel-border);background:var(--vscode-sideBar-background);padding:14px 18px 24px}
@@ -319,6 +319,49 @@ font.addEventListener('input', update);
 title.addEventListener('input', () => { previewTitle.textContent = title.value || D.filename; applyLayout(); });
 window.addEventListener('resize', applyLayout);
 
+
+function textSegments(text) {
+  const keywords = new Set(['return','for','while','if','else','switch','case','break','continue','class','struct','public','private','protected','using','namespace','include','std']);
+  const types = new Set(['int','long','short','float','double','char','bool','void','string','auto','const','vector','map','set']);
+  const ops = '{}()[]<>;,+*/=!-';
+  const out = [];
+  let i = 0;
+  const isAlpha = ch => !!ch && ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_');
+  const isDigit = ch => !!ch && ch >= '0' && ch <= '9';
+  const isWord = ch => isAlpha(ch) || isDigit(ch);
+  while (i < text.length) {
+    if (text.slice(i, i + 2) === '//') { out.push({ text: text.slice(i), color: '#6a9955' }); break; }
+    if (text[i] === '#' && !text.slice(0, i).trim()) { out.push({ text: text.slice(i), color: '#dcdcaa' }); break; }
+    if (text[i] === '"') {
+      let j = i + 1;
+      while (j < text.length) { if (text[j] === '"' && text[j - 1] !== '\\\\') { j += 1; break; } j += 1; }
+      out.push({ text: text.slice(i, j), color: '#ce9178' }); i = j; continue;
+    }
+    if (isDigit(text[i])) {
+      let j = i + 1; while (j < text.length && (isDigit(text[j]) || text[j] === '.')) j += 1;
+      out.push({ text: text.slice(i, j), color: '#b5cea8' }); i = j; continue;
+    }
+    if (isAlpha(text[i])) {
+      let j = i + 1; while (j < text.length && isWord(text[j])) j += 1;
+      const word = text.slice(i, j);
+      out.push({ text: word, color: types.has(word) ? '#4ec9b0' : (keywords.has(word) ? '#569cd6' : '') });
+      i = j; continue;
+    }
+    if (ops.includes(text[i])) out.push({ text: text[i], color: '#d4d4d4' });
+    else out.push({ text: text[i], color: '' });
+    i += 1;
+  }
+  return out;
+}
+function drawHighlightedText(ctx, text, x, y, fallback) {
+  let cursor = x;
+  for (const part of textSegments(text)) {
+    ctx.fillStyle = part.color || fallback;
+    ctx.fillText(part.text, cursor, y);
+    cursor += ctx.measureText(part.text).width;
+  }
+}
+
 function exportPng() {
   const t = themes[s.theme] || themes.aurora;
   const scale = 2;
@@ -379,8 +422,8 @@ function exportPng() {
     else if (lineType === 'warning') ctx.font = '750 ' + m.fontSize + 'px Consolas, monospace';
     else ctx.font = '500 ' + m.fontSize + 'px Consolas, monospace';
 
-    ctx.fillStyle = lineType === 'boundary' || lineType === 'meta' || lineType === 'quote' ? t.muted : (lineType === 'warning' ? '#ffcc66' : t.text);
-    ctx.fillText(line.text || ' ', x, y);
+    const baseColor = lineType === 'boundary' || lineType === 'meta' || lineType === 'quote' ? t.muted : (lineType === 'warning' ? '#ffcc66' : t.text);
+    drawHighlightedText(ctx, line.text || ' ', x, y, baseColor);
   });
 
   if (s.branding) {
@@ -615,6 +658,27 @@ function visualMarkdownLine(raw: string, noteKind?: string): { text: string; kin
 
 function unwrapDashNote(value: string): string {
   return value.trim().replace(/^--\s*(.*?)\s*--$/, '$1');
+}
+
+
+function renderSnapHtml(text: string): string {
+  const re = /("(?:\\.|[^"\\])*"|\/\/.*|^\s*#\s*\w+|\b(?:int|long|short|float|double|char|bool|void|string|auto|const|return|for|while|if|else|switch|case|break|continue|class|struct|public|private|protected|using|namespace|include|std|vector|map|set)\b|\b\d+(?:\.\d+)?\b|[{}()[\]<>;,+*\/=!-])/g;
+  let html = '';
+  let last = 0;
+  for (const match of text.matchAll(re)) {
+    if (match.index > last) html += escapeHtml(text.slice(last, match.index));
+    const value = match[0];
+    let cls = 'tok-op';
+    if (/^\s*#/.test(value)) cls = 'tok-preproc';
+    else if (value.startsWith('//')) cls = 'tok-comment';
+    else if (value.startsWith('"')) cls = 'tok-string';
+    else if (/^\d/.test(value)) cls = 'tok-number';
+    else if (/^(int|long|short|float|double|char|bool|void|string|auto|const|vector|map|set)$/.test(value)) cls = 'tok-type';
+    else if (/^[A-Za-z_]/.test(value)) cls = 'tok-keyword';
+    html += `<span class="${cls}">${escapeHtml(value)}</span>`;
+    last = match.index + value.length;
+  }
+  return html + escapeHtml(text.slice(last));
 }
 
 function stripInlineMarkdown(value: string): string {

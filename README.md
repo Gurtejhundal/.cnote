@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>⬇ grab .cnote 7.1.0</b></a> &nbsp; · &nbsp;
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>⬇ grab .cnote 7.1.1</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote 7.1.0 from Marketplace ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.1.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote"><b>👇 Install .cnote 7.1.1 from Marketplace ⚡</b></a><br>
   <sub>Manual VSIX is still available in the GitHub repo.</sub>
 </p>
 
@@ -58,7 +58,7 @@ V6.2.1 fixes multi-note drag selection. If your selection crosses several visual
 
 ### 8 note types that actually look different
 
-The Insert Note menu stays focused. Use **Note** for `// @note key line` and **Heading** for `// @section #Code`; both stay one source line. In C/C++/JS-style files, type `--` then Space for a note, `#` then Space for a heading, or `!!` then Space for a paragraph block. You can change all three typing triggers in .cnote Settings. `@checkpoint` is not offered for new notes because Quiz covers it. Old files using it still parse, so nothing breaks.
+The Insert Note menu stays focused. Use **Note** for `// @note key line` and **Heading** for `// @section #Code`; both stay one source line. In C/C++/JS-style files, type `--` then Space for a note, `#` then Space for a heading, or `!!` then Space for a definition block. You can change all three typing triggers in .cnote Settings. `@checkpoint` is not offered for new notes because Quiz covers it. Old files using it still parse, so nothing breaks.
 
 | Type | Visual cue | Best for |
 | --- | --- | --- |
@@ -117,7 +117,7 @@ Set width, spacing, font size, line numbers, window dots, and branding. Save a 2
 | Open Study | `Ctrl + Shift + F7` | `Cmd + Shift + F7` |
 | Snap Code | `Ctrl + Shift + F10` | `Cmd + Shift + F10` |
 
-Fast typing: type `--` then Space for a one-line note, `#` then Space for a heading, or `!!` then Space for a multiline paragraph block. More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. Commands are also available in the VS Code Command Palette.
+Fast typing: type `--` then Space for a one-line note, `#` then Space for a heading, or `!!` then Space for a multiline definition block. More of a click person? **Note · Snap · .cnote menu** are in the editor toolbar. Commands are also available in the VS Code Command Palette.
 
 “Annotate Selection” inserts a note template **for you to fill in**. It does not generate an AI explanation.
 
@@ -131,7 +131,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 1. Install [**.cnote on the Visual Studio Marketplace**](https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote).
 2. Open a supported source file and hit **Ctrl/Cmd + Shift + F6** to insert a note.
-3. Use **Ctrl/Cmd + Shift + F7** for Study. Manual VSIX fallback: [codenote-7.1.0.vsix](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.0.vsix).
+3. Use **Ctrl/Cmd + Shift + F7** for Study. Manual VSIX fallback: [codenote-7.1.1.vsix](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-7.1.1.vsix).
 
 ## fork it. break it. improve it. 🛠️
 
