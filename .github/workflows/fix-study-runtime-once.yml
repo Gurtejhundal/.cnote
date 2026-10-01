@@ -1,0 +1,139 @@
+name: Fix Study runtime once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-study-runtime-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Patch Study runtime and release metadata
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          study_path = Path('src/studyPreview.ts')
+          study = study_path.read_text(encoding='utf-8')
+
+          old = "this.panel.webview.html = `<!doctype html>"
+          new = "this.panel.webview.html = String.raw`<!doctype html>"
+          if study.count(old) != 1:
+              raise SystemExit(f'Expected exactly one normal Study HTML template, found {study.count(old)}')
+          study = study.replace(old, new, 1)
+
+          old_comment = "if(mod&&event.key==='/'){event.preventDefault();toggleComment(area);return;}"
+          new_comment = "if(mod&&(event.key==='/'||event.code==='Slash')){event.preventDefault();toggleComment(area);return;}"
+          if old_comment not in study:
+              raise SystemExit('Could not find Study Ctrl/Cmd+/ handler')
+          study = study.replace(old_comment, new_comment, 1)
+
+          old_run = "if(mod&&event.key==='Enter'){event.preventDefault();runCell(id);return;}"
+          new_run = "if(mod&&(event.key==='Enter'||event.code==='Enter'||event.code==='NumpadEnter')){event.preventDefault();runCell(id);return;}"
+          if old_run not in study:
+              raise SystemExit('Could not find Study Ctrl/Cmd+Enter handler')
+          study = study.replace(old_run, new_run, 1)
+
+          study_path.write_text(study, encoding='utf-8')
+
+          checker = r'''const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+
+const src = fs.readFileSync('src/studyPreview.ts', 'utf8');
+const marker = 'this.panel.webview.html = String.raw`';
+const start = src.indexOf(marker);
+assert.ok(start >= 0, 'Study HTML must use String.raw so embedded JavaScript escapes survive template rendering');
+const bodyStart = start + marker.length;
+const end = src.indexOf('`;\n  }', bodyStart);
+assert.ok(end > bodyStart, 'Could not locate the end of the Study webview template');
+let html = src.slice(bodyStart, end);
+html = html.replace(/\$\{[^{}]*\}/g, '0');
+assert.ok(!html.includes('${'), 'Study smoke test could not neutralize all host template substitutions');
+const match = html.match(/<script nonce="[^"]*">([\s\S]*?)<\/script>/);
+assert.ok(match, 'Study webview template must contain a script');
+assert.doesNotThrow(() => new vm.Script(match[1]), 'Generated Study webview JavaScript must parse');
+assert.ok(match[1].includes("event.code==='Slash'"), 'Study must support Ctrl/Cmd+/ by physical Slash key');
+assert.ok(match[1].includes("event.code==='NumpadEnter'"), 'Study must support Ctrl/Cmd+Enter across Enter keys');
+assert.ok(match[1].includes("data-run-code") || src.includes('data-run-code'), 'Study must keep per-cell Run controls');
+console.log('Study webview JavaScript parses and cell keyboard handlers are present.');
+'''
+          Path('scripts/check-study-webview.cjs').write_text(checker, encoding='utf-8')
+
+          pkg_path = Path('package.json')
+          pkg = json.loads(pkg_path.read_text(encoding='utf-8'))
+          pkg['version'] = '7.1.7'
+          if 'node scripts/check-study-webview.cjs' not in pkg['scripts']['test']:
+              pkg['scripts']['test'] = pkg['scripts']['test'].replace('node scripts/check-webviews.cjs', 'node scripts/check-webviews.cjs && node scripts/check-study-webview.cjs')
+          pkg_path.write_text(json.dumps(pkg, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+          lock_path = Path('package-lock.json')
+          lock = json.loads(lock_path.read_text(encoding='utf-8'))
+          lock['version'] = '7.1.7'
+          if '' in lock.get('packages', {}):
+              lock['packages']['']['version'] = '7.1.7'
+          lock_path.write_text(json.dumps(lock, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+
+          build_path = Path('.github/workflows/build-vsix.yml')
+          build = build_path.read_text(encoding='utf-8')
+          anchor = "      - name: Check Study model\n        run: node scripts/check-study-model.cjs\n"
+          addition = "      - name: Check Study webview runtime\n        run: node scripts/check-study-webview.cjs\n\n"
+          if addition not in build:
+              if anchor not in build:
+                  raise SystemExit('Could not find Build VSIX Study model step')
+              build = build.replace(anchor, addition + anchor, 1)
+          build_path.write_text(build, encoding='utf-8')
+
+          readme_path = Path('README.md')
+          readme = readme_path.read_text(encoding='utf-8').replace('codenote-7.1.5.vsix', 'codenote-7.1.7.vsix').replace('codenote-7.1.6.vsix', 'codenote-7.1.7.vsix')
+          readme_path.write_text(readme, encoding='utf-8')
+
+          changelog_path = Path('CHANGELOG.md')
+          changelog = changelog_path.read_text(encoding='utf-8')
+          entry = """## 7.1.7 - 2026-10-01
+- Fix the Study webview runtime itself: preserve embedded JavaScript escape sequences with `String.raw`, eliminating the script parse failure that made cell buttons and keyboard shortcuts appear dead.
+- Restore per-cell Run and Ctrl/Cmd+Enter execution without changing the Study design.
+- Make Ctrl/Cmd+/ robust through the physical Slash key while keeping Apply, indent/outdent, move, duplicate, and delete-line shortcuts.
+- Add a real Study webview JavaScript parse smoke test to CI so a broken embedded script cannot ship again.
+
+"""
+          if '## 7.1.7 - 2026-10-01' not in changelog:
+              changelog = changelog.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
+          changelog_path.write_text(changelog, encoding='utf-8')
+          PY
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Run regression suite
+        run: npm test
+
+      - name: Remove one-shot workflow and commit repair
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-study-runtime-once.yml
+          git add src/studyPreview.ts scripts/check-study-webview.cjs package.json package-lock.json README.md CHANGELOG.md .github/workflows/build-vsix.yml
+          git commit -m "Fix Study cell runtime and shortcuts in 7.1.7"
+          git push
