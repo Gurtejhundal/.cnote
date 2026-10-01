@@ -80,6 +80,13 @@ const layoutCalls = html.match(/layoutMetrics\(s, D\.lines\.length\)/g) || [];
 assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same layout model');
 
 
+
+const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
+assert.ok(studySource.includes('data-run-cell'), 'Notebook must render per-code-cell Run buttons');
+assert.ok(studySource.includes('data-debug-cell'), 'Notebook must render per-code-cell Debug buttons');
+assert.ok(studySource.includes('jsonForScript(codeCells)'), 'Notebook must share one serialized code-cell model with the webview script');
+assert.ok(!studySource.includes('>Source<'), 'Notebook note cards must not render Source buttons');
+
 const { SettingsPanel } = load('settingsPanel.js');
 const settingsScript = new SettingsPanel().html().match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new vm.Script(settingsScript), 'Settings webview must contain valid JavaScript');

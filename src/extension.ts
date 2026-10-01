@@ -6,7 +6,7 @@ import { NOTE_KINDS, NoteBlock, NoteKind, parseNoteBlocks } from './parser';
 import { CodeNoteOutlineProvider } from './outline';
 import { ReviewStore } from './review';
 import { exportStudyPdf } from './pdfExport';
-import { runDocument } from './runner';
+import { runCodeCell, runDocument } from './runner';
 import { StudyPreviewManager } from './studyPreview';
 import { IndexedNote, WorkspaceNoteIndex } from './workspaceIndex';
 import { VisualModeManager } from './visualMode';
@@ -46,6 +46,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let refreshUi = (): void => {};
   const notebook = new StudyPreviewManager(
     runDocument,
+    runCodeCell,
     exportFileNotes,
     exportStudyPdf,
     review,

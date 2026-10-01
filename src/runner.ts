@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as os from 'os';
+import * as fs from 'fs/promises';
 
 const DEFAULT_RUNNERS = new Set([
   'cpp', 'c', 'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -18,40 +20,42 @@ export async function runDocument(document: vscode.TextDocument): Promise<void> 
   }
 
   await document.save();
-  const command = buildRunCommand(document);
+  await runPath(document, document.uri.fsPath, path.dirname(document.uri.fsPath), `Run ${path.basename(document.uri.fsPath)}`);
+}
+
+export async function runCodeCell(document: vscode.TextDocument, code: string, label: string): Promise<void> {
+  if (document.isUntitled) {
+    vscode.window.showErrorMessage('Save the file before running cells.');
+    return;
+  }
+  const source = document.uri.fsPath;
+  const ext = path.extname(source) || extensionForLanguage(document.languageId);
+  const safeBase = path.basename(source, path.extname(source)).replace(/[^A-Za-z0-9_.-]/g, '-');
+  const dir = path.join(os.tmpdir(), 'codenote-cells');
+  const temp = path.join(dir, `${safeBase}-${Date.now()}${ext}`);
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(temp, code.replace(/\s+$/, '') + '\n', 'utf8');
+  await runPath(document, temp, path.dirname(source), `Run ${label}`);
+}
+
+async function runPath(document: vscode.TextDocument, source: string, cwd: string, name: string): Promise<void> {
+  const command = buildRunCommand(document.languageId, source);
   if (!command) {
     const action = await vscode.window.showInformationMessage(
       `CodeNote has no built-in runner for ${document.languageId}. Add codenote.runCommands.${document.languageId} in Settings if you want one.`,
       'Open Settings'
     );
-    if (action === 'Open Settings') {
-      await vscode.commands.executeCommand('workbench.action.openSettings', 'codenote.runCommands');
-    }
+    if (action === 'Open Settings') await vscode.commands.executeCommand('workbench.action.openSettings', 'codenote.runCommands');
     return;
   }
 
-  const source = document.uri.fsPath;
-  const dir = path.dirname(source);
   const execution = process.platform === 'win32'
-    ? new vscode.ShellExecution('cmd.exe', ['/d', '/c', command], { cwd: dir })
-    : new vscode.ShellExecution('/bin/bash', ['-lc', command], { cwd: dir });
+    ? new vscode.ShellExecution('cmd.exe', ['/d', '/c', command], { cwd })
+    : new vscode.ShellExecution('/bin/bash', ['-lc', command], { cwd });
 
   const taskScope = vscode.workspace.getWorkspaceFolder(document.uri) ?? vscode.TaskScope.Global;
-  const task = new vscode.Task(
-    { type: 'codenote', language: document.languageId },
-    taskScope,
-    `Run ${path.basename(source)}`,
-    'CodeNote',
-    execution,
-    []
-  );
-
-  task.presentationOptions = {
-    reveal: vscode.TaskRevealKind.Always,
-    panel: vscode.TaskPanelKind.Dedicated,
-    clear: true,
-    focus: true
-  };
+  const task = new vscode.Task({ type: 'codenote', language: document.languageId }, taskScope, name, 'CodeNote', execution, []);
+  task.presentationOptions = { reveal: vscode.TaskRevealKind.Always, panel: vscode.TaskPanelKind.Dedicated, clear: true, focus: true };
 
   try {
     await vscode.tasks.executeTask(task);
@@ -60,8 +64,7 @@ export async function runDocument(document: vscode.TextDocument): Promise<void> 
   }
 }
 
-function buildRunCommand(document: vscode.TextDocument): string | undefined {
-  const source = document.uri.fsPath;
+function buildRunCommand(languageId: string, source: string): string | undefined {
   const dir = path.dirname(source);
   const ext = path.extname(source);
   const base = path.basename(source, ext);
@@ -69,8 +72,8 @@ function buildRunCommand(document: vscode.TextDocument): string | undefined {
   const q = shellQuote;
 
   const custom = vscode.workspace.getConfiguration('codenote').get<Record<string, string>>('runCommands', {});
-  if (custom[document.languageId]) {
-    return custom[document.languageId]
+  if (custom[languageId]) {
+    return custom[languageId]
       .replaceAll('${file}', q(source))
       .replaceAll('${dir}', q(dir))
       .replaceAll('${base}', q(base))
@@ -79,7 +82,7 @@ function buildRunCommand(document: vscode.TextDocument): string | undefined {
       .replaceAll('${binary}', q(binary));
   }
 
-  switch (document.languageId) {
+  switch (languageId) {
     case 'cpp': {
       const standard = vscode.workspace.getConfiguration('codenote').get<string>('cppStandard', 'c++20');
       return `g++ ${q(source)} -std=${standard} -o ${q(binary)} && ${q(binary)}`;
@@ -105,6 +108,10 @@ function buildRunCommand(document: vscode.TextDocument): string | undefined {
     case 'powershell': return `pwsh -NoProfile -File ${q(source)}`;
     default: return undefined;
   }
+}
+
+function extensionForLanguage(languageId: string): string {
+  return ({ javascript: '.js', typescript: '.ts', python: '.py', shellscript: '.sh', powershell: '.ps1' } as Record<string, string>)[languageId] ?? `.${languageId}`;
 }
 
 function shellQuote(value: string): string {

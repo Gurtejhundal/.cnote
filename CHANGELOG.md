@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.5.0
+- Redesign Notebook as compact study cells with per-code-cell Run and Debug actions.
+- Remove noisy Source buttons and duplicate note body text from Notebook cards.
+- Trim empty padding around code cells so the reading view is less congested.
+
 ## 6.3.2
 - Add packaged PNG support QR and crying emoji assets to the GitHub and Marketplace README.
 - Fix typing shortcuts so `-- ` and `# ` leave the caret at the end instead of keeping inserted text selected.
