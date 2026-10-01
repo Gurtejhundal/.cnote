@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.1.4 - 2026-10-01
+- Fix Study Mode button handlers by removing the unsupported CSS.escape dependency from the webview script.
+- Keep definition comment delimiters hidden in Visual Mode, including while editing definition content.
+
 ## 7.1.3 - 2026-10-01
 
 - Fix blank Study code cells by removing the fragile transparent textarea/highlight overlay.
@@ -170,3 +174,4 @@
 ## 5.0.0
 
 - Added Snap Studio with eight templates and high-resolution PNG export.
+

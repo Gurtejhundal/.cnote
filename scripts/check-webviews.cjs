@@ -93,6 +93,7 @@ assert.ok(studySource.includes('markStale') && studySource.includes("type:'refre
 assert.ok(!studySource.includes('this.render(event.document)'), 'Study must not rebuild the webview on every source edit');
 assert.ok(studySource.includes('data-run-code') && studySource.includes('runCode'), 'Study code cells must run inline');
 assert.ok(studySource.includes('data-apply-code') && studySource.includes('applyCode'), 'Study code cells must be editable and apply back to source');
+assert.ok(!studySource.includes('CSS.escape'), 'Study webview must not depend on CSS.escape for button handlers');
 assert.ok(studySource.includes('code-placeholder'), 'Focus Notes must leave code placeholders instead of making code vanish');
 assert.ok(studySource.includes('study.defaultFocusNotes') && studySource.includes('study.lineNumbers'), 'Study must read Study-specific settings');
 assert.ok(studySource.includes('.cnote Study'), 'Study webview must use Study product language');
@@ -112,6 +113,8 @@ assert.ok(!studySource.includes('Draft only') && !studySource.includes('Write to
 const visualSource = fs.readFileSync(path.join(__dirname, '../out/visualMode.js'), 'utf8');
 assert.ok(!visualSource.includes('font-size: 1.28em') && !visualSource.includes('font-size: 1.14em'), 'Inline headings must not enlarge row height and overlap following notes');
 assert.ok(visualSource.includes("!['paragraph', 'section', 'definition'].includes(kind)"), 'Title-style notes must not duplicate boundary labels');
+assert.ok(visualSource.includes('collectEditingDefinitionBlock'), 'Definition comments must keep delimiters hidden while editing');
+assert.ok(visualSource.includes("block.kind === 'definition' ? '' : boundaryText"), 'Definition comments must not render boundary chrome');
 
 const { SettingsPanel } = load('settingsPanel.js');
 const settingsHtml = new SettingsPanel().html();

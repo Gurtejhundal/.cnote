@@ -121,7 +121,10 @@ function emptyRanges():VisualRanges{
 function collectVisualRanges(document:vscode.TextDocument,blocks:NoteBlock[],editingOffsets:Set<number>):VisualRanges{
   const r=emptyRanges();
   for(const block of blocks){
-    if(editingOffsets.has(block.startOffset)) continue;
+    if(editingOffsets.has(block.startOffset)){
+      if(block.kind==='definition')collectEditingDefinitionBlock(document,block,r);
+      continue;
+    }
     collectBlock(document,block,r);
   }
   return r;
@@ -165,10 +168,10 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
     let visual:VisualLine|undefined;
 
     if(lineNo===start){
-      const text=boundaryText(true,boundaryStyle,symbol,boundaryLabel(block.kind,label));
+      const text=block.kind==='definition'?'':boundaryText(true,boundaryStyle,symbol,boundaryLabel(block.kind,label));
       if(text)visual={style:'boundary',text};
     } else if(lineNo===end){
-      const text=boundaryText(false,boundaryStyle,symbol,undefined);
+      const text=block.kind==='definition'?'':boundaryText(false,boundaryStyle,symbol,undefined);
       if(text)visual={style:'boundary',text};
     } else {
       const raw=stripCommentPrefix(document.lineAt(lineNo).text,adapter?.comment);
@@ -177,6 +180,15 @@ function collectBlock(document:vscode.TextDocument,block:NoteBlock,result:Visual
 
     if(visual)pushVisual(result,visual,renderAtLine(document,lineNo,visual.text));
   }
+}
+
+function collectEditingDefinitionBlock(document:vscode.TextDocument,block:NoteBlock,result:VisualRanges):void{
+  const start=block.range.start.line;
+  let end=block.range.end.line;
+  if(block.range.end.character===0&&end>start)end--;
+  end=Math.min(end,document.lineCount-1);
+  concealLine(document,start,result);
+  if(end>start)concealLine(document,end,result);
 }
 
 function boundaryLabel(kind:string,label:boolean):string|undefined{
