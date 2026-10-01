@@ -48,7 +48,7 @@ function doc(text, languageId) {
   };
 }
 
-const { effectiveEndLine, parseNoteBlocks } = load('parser.js');
+const { NOTE_KINDS, effectiveEndLine, parseNoteBlocks } = load('parser.js');
 let blocks = parseNoteBlocks(doc('/* @note print whole vector */\nint x;', 'cpp'));
 assert.equal(blocks.length, 1);
 assert.equal(blocks[0].kind, 'note');
@@ -61,16 +61,11 @@ assert.equal(blocks[0].kind, 'section');
 assert.equal(blocks[0].content, 'Syntax');
 assert.equal(blocks[0].range.start.line, 0);
 
-
-blocks = parseNoteBlocks(doc(`const s = "/* @note not a real note */";
-/* @note real note */`, 'cpp'));
+blocks = parseNoteBlocks(doc(`const s = "/* @note not a real note */";\n/* @note real note */`, 'cpp'));
 assert.equal(blocks.length, 1);
 assert.equal(blocks[0].content, 'real note');
 
-blocks = parseNoteBlocks(doc(`# @note
-# body
-# @end
-print("x")`, 'python'));
+blocks = parseNoteBlocks(doc(`# @note\n# body\n# @end\nprint("x")`, 'python'));
 assert.equal(blocks.length, 1);
 assert.equal(blocks[0].range.end.line, 3);
 assert.equal(effectiveEndLine(blocks[0]), 2);
@@ -89,4 +84,17 @@ assert.equal(blocks[0].content, '#Code');
 assert.equal(blocks[0].range.start.line, 0);
 assert.equal(blocks[0].range.end.line, 0);
 assert.equal(blocks[0].title, 'Code');
-console.log('Single-line .cnote parser checks pass.');
+
+// Regression: every multiline block kind must begin on the actual opener row,
+// never on blank lines above it. `^\\s*` used to swallow the blank rows.
+for (const kind of NOTE_KINDS) {
+  const source = `int before = 1;\n\n\n/* @${kind}\n# ${kind}\nbody\n*/\nint after = 2;`;
+  const parsed = parseNoteBlocks(doc(source, 'cpp'));
+  assert.equal(parsed.length, 1, `${kind}: expected one parsed block`);
+  assert.equal(parsed[0].kind, kind, `${kind}: wrong kind`);
+  assert.equal(parsed[0].range.start.line, 3, `${kind}: parser swallowed preceding blank lines`);
+  assert.match(parsed[0].raw, new RegExp(`^/\\* @${kind}\\b`), `${kind}: raw block must start at opener`);
+  assert.equal(effectiveEndLine(parsed[0]), 6, `${kind}: wrong physical end line`);
+}
+
+console.log('Inline .cnote parser checks pass for single-line and all multiline note kinds.');
