@@ -143,6 +143,11 @@ snap = capture(document, selection(6, 0, 10, 0));
 assert.equal(JSON.stringify(snap.lines.map(line => line.text)), JSON.stringify(['◆', 'display', 'it will display array', '◆']));
 assert.ok(!snap.lines.some(line => /◆\s+✦|✦\s+display/.test(line.text)));
 
+// Old complexity blocks should not duplicate a generic "Complexity" heading.
+snap = capture(doc(['/* @complexity', '# Complexity', 'Time: `O(n)`', 'Space: `O(1)`', '*/'].join('\n'), 'cpp'), selection(0, 0, 0, 0), 0, 4);
+assert.ok(!snap.lines.some(line => line.text === 'Complexity' || line.text === '⏱ Complexity'));
+assert.ok(snap.lines.some(line => line.text.includes('Time')));
+
 // old dash-wrapped line notes render as plain text.
 snap = capture(doc('// @note -- old wrapper --', 'cpp'), selection(0, 0, 0, 0), 0, 0);
 assert.equal(snap.lines[0].text, 'old wrapper');

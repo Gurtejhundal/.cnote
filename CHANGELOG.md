@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.3.2
+- Add packaged PNG support QR and crying emoji assets to the GitHub and Marketplace README.
+- Fix typing shortcuts so `-- ` and `# ` leave the caret at the end instead of keeping inserted text selected.
+- Refine complexity notes by removing the duplicate generic heading from new notes and hiding old generic complexity headings visually.
+- Reduce the default Snap card width to cut empty right-side space.
+- Update the Marketplace publisher ID to `gurtejbirsingh-dev` for publishing.
+
 ## 6.3.0
 - Fix Snap Studio preview row alignment by keeping line numbers and source text on the same fixed-height monospace row.
 - Keep note styling from changing row height, so single-digit and double-digit line numbers stay aligned with content.

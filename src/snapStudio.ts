@@ -113,7 +113,7 @@ export class SnapStudioManager implements vscode.Disposable {
     const initial: Prefs = {
       theme: String(stored.theme ?? cfg.get('snap.defaultTemplate', 'aurora')),
       padding: Number(stored.padding ?? 36),
-      width: Number(stored.width ?? 960),
+      width: Number(stored.width ?? 760),
       fontSize: Number(stored.fontSize ?? 18),
       lineNumbers: Boolean(stored.lineNumbers ?? cfg.get('snap.lineNumbers', true)),
       windowDots: Boolean(stored.windowDots ?? true),
@@ -196,7 +196,7 @@ details{margin-top:12px;border-top:1px solid var(--vscode-panel-border);padding-
   <div class="quick">
     <div class="field"><label>Title</label><input id="title" type="text" value="${escapeHtml(payload.filename)}"></div>
     <div class="field"><label>Spacing</label><select id="padding"><option value="28">Compact</option><option value="36">Balanced</option><option value="56">Wide</option></select></div>
-    <div class="field"><label>Width</label><select id="width"><option value="760">760</option><option value="960">960</option><option value="1180">1180</option></select></div>
+    <div class="field"><label>Width</label><select id="width"><option value="640">640</option><option value="760">760</option><option value="960">960</option></select></div>
   </div>
 
   <details>
@@ -237,7 +237,7 @@ const previewTitle = byId('previewTitle');
 const code = byId('code');
 const exportCanvas = byId('exportCanvas');
 
-const SNAP = { header: 64, codeTop: 24, codeBottom: 32, gutter: 40, codeLeft: 24, codeRight: 28, lineRatio: 1.28 };
+const SNAP = { header: 64, codeTop: 24, codeBottom: 32, gutter: 40, codeLeft: 24, codeRight: 18, lineRatio: 1.28 };
 function layoutMetrics(state, lineCount) {
   const width = state.width;
   const pad = state.padding;
@@ -538,7 +538,7 @@ function visualLines(document: vscode.TextDocument, start: number, end: number):
         continue;
       }
 
-      const visual = visualMarkdownLine(stripComment(raw, adapter?.comment));
+      const visual = visualMarkdownLine(stripComment(raw, adapter?.comment), block.kind);
       Object.assign(target, renderLine(indent + visual.text, target.sourceLine, visual.kind, block.kind));
     }
   }
@@ -547,7 +547,7 @@ function visualLines(document: vscode.TextDocument, start: number, end: number):
 }
 
 function singleBlockLine(kind: string, raw: string): { text: string; kind: SnapLineKind } {
-  const visual = visualMarkdownLine(raw);
+  const visual = visualMarkdownLine(raw, kind);
   return kind === 'section' && visual.kind === 'note' ? { text: visual.text, kind: 'heading1' } : visual;
 }
 
@@ -569,7 +569,7 @@ function stripComment(text: string, comment: any): string {
   return value.replace(/^\*\s?/, '');
 }
 
-function visualMarkdownLine(raw: string): { text: string; kind: SnapLineKind } {
+function visualMarkdownLine(raw: string, noteKind?: string): { text: string; kind: SnapLineKind } {
   let value = raw.trimEnd();
   const trimmed = value.trim();
 
@@ -578,9 +578,11 @@ function visualMarkdownLine(raw: string): { text: string; kind: SnapLineKind } {
 
   const heading = trimmed.match(/^(#{1,6})\s*(\S.*)$/);
   if (heading) {
+    const text = stripInlineMarkdown(heading[2]);
+    if (noteKind === 'complexity' && text.toLowerCase() === 'complexity') return { text: '', kind: 'blank' };
     const level = heading[1].length;
     return {
-      text: stripInlineMarkdown(heading[2]),
+      text,
       kind: level === 1 ? 'heading1' : level === 2 ? 'heading2' : 'heading3'
     };
   }

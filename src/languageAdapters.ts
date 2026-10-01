@@ -65,8 +65,8 @@ export function buildSingleLineNoteSnippet(languageId: string, kind: string, tex
 
 export function expandTypingShortcut(languageId: string, lineText: string): string | undefined {
   const trimmed = lineText.trimStart();
-  if (trimmed === '-- ') return buildSingleLineNoteSnippet(languageId, 'note', '${1:Write your note.}');
-  if (trimmed === '# ') return buildSingleLineNoteSnippet(languageId, 'section', '#${1:Heading}');
+  if (trimmed === '-- ') return buildSingleLineNoteSnippet(languageId, 'note', '');
+  if (trimmed === '# ') return buildSingleLineNoteSnippet(languageId, 'section', '#');
   return undefined;
 }
 

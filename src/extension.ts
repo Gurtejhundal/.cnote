@@ -259,7 +259,7 @@ function noteSnippet(languageId: string, kind: NoteKind, compact?: 'line' | 'hea
     section: ['# ${1:Section}', '${2:What this section covers.}'],
     definition: ['# ${1:Concept}', 'Meaning: ${2:Write the exact definition.}'],
     warning: ['# ${1:Watch out}', 'Risk: ${2:Explain the mistake or edge case.}'],
-    complexity: ['# ${1:Complexity}', 'Time: `${2:O(?)}`', 'Space: `${3:O(?)}`'],
+    complexity: ['Time: `${1:O(?)}`', 'Space: `${2:O(?)}`'],
     quiz: ['question: ${1:Write the question.}', 'answer: ${2:Write the answer.}'],
     checkpoint: ['question: ${1:What should you recall?}', 'answer: ${2:Write the expected answer.}'],
     tip: ['# ${1:Tip}', '> ${2:Write the rule, shortcut, or memory aid.}'],

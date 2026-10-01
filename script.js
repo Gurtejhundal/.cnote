@@ -50,7 +50,7 @@ const notes = {
   section: ['# Arrays & vectors\nOne topic. All the context.', '<h3>Arrays &amp; vectors</h3><p>One topic. All the context.</p>'],
   definition: ['# Vectors\nVectors are **dynamic arrays**.\n- `push_back()` adds an element\n- `size()` counts the elements', '<h3>Vectors</h3><p>Vectors are <strong>dynamic arrays</strong>.</p><ul><li><code>push_back()</code> adds an element</li><li><code>size()</code> counts the elements</li></ul>'],
   warning: ['# Off-by-one has entered the chat\nIf size is 10, the last valid index is **9**.', '<h3>Off-by-one has entered the chat</h3><p>If size is 10, the last valid index is <strong>9</strong>.</p>'],
-  complexity: ['# Binary search\nTime: `O(log n)`\nSpace: `O(1)`', '<h3>Binary search</h3><p>Time: <code>O(log n)</code></p><p>Space: <code>O(1)</code></p>'],
+  complexity: ['Time: `O(log n)`\nSpace: `O(1)`', '<p><strong>Time:</strong> <code>O(log n)</code></p><p><strong>Space:</strong> <code>O(1)</code></p>'],
   quiz: ['question: Last valid index when size is 10?\nanswer: 9. Zero-based indexing, bestie.', '<h3>Last valid index when size is 10?</h3><details><summary>Reveal answer</summary><p>9. Zero-based indexing, bestie.</p></details>'],
   checkpoint: ['question: Why does binary search need sorted data?\nanswer: To know which half can be discarded.', '<h3>Why does binary search need sorted data?</h3><details><summary>Reveal answer</summary><p>To know which half can be discarded.</p></details>'],
   tip: ['# Tiny reminder\nUse `empty()` to check whether a vector has no elements.', '<h3>Tiny reminder</h3><p>Use <code>empty()</code> to check whether a vector has no elements.</p>'],

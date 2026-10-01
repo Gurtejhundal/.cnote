@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><b>⬇ grab .cnote 6.3.0</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.2.vsix"><b>⬇ grab .cnote 6.3.2</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix"><b>👇 Download .cnote 6.3.0 in one click ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.2.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.2.vsix"><b>👇 Download .cnote 6.3.2 in one click ⚡</b></a><br>
   <sub>VS Code → Extensions → … → Install from VSIX…</sub>
 </p>
 
@@ -129,7 +129,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.3.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.0.vsix).
+1. [Download **codenote-6.3.2.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.3.2.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 
@@ -158,11 +158,16 @@ The Pages workflow publishes the website and download on `main` updates. Website
 
 ## the extension is free. the PS5 is not. 🎮
 
-<p align="center"><a href="https://gurtejhundal.github.io/.cnote/#support"><img src="assets/support.gif" alt="Animated controller for the optional PS5 fund. The extension stays free; support is optional." width="900"></a></p>
+<p align="center"><a href="https://gurtejhundal.github.io/.cnote/#support"><img src="media/readme/support.gif" alt="Animated controller for the optional PS5 fund. The extension stays free; support is optional." width="900"></a></p>
 
 If .cnote saves you a little brain power, you can help fuel the next update. Or the very ambitious console fund. **No paywall. No guilt trip.**
 
-<p align="center"><b>UPI support QR is available in the GitHub repo.</b><br><sub>Gurtejbir Singh · A GitHub star is love, too.</sub></p>
+<p align="center">
+  <img src="media/readme/crying-emoji.png" alt="Crying emoji for the optional support side quest" width="115"><br>
+  <img src="media/readme/upi-qr.png" alt="UPI donation QR for Gurtejbir Singh" width="180"><br>
+  <b>Scan with a UPI app · any amount helps.</b><br>
+  <sub>Gurtejbir Singh · A GitHub star is love, too.</sub>
+</p>
 
 ---
 

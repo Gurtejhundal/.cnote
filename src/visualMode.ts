@@ -219,8 +219,10 @@ function visualizePhysicalLine(raw:string,kind:string,showKind:boolean,showTags:
 
   const heading=raw.match(/^\s*(#{1,6})\s*(\S.*)$/);
   if(heading){
+    const cleanHeading=cleanInlineMarkdown(heading[2]);
+    if(kind==='complexity'&&cleanHeading.toLowerCase()==='complexity')return undefined;
     const depth=heading[1].length;
-    return{style:depth===1?'h1':depth===2?'h2':'h3',text:decorateHeading(kind,cleanInlineMarkdown(heading[2]))};
+    return{style:depth===1?'h1':depth===2?'h2':'h3',text:decorateHeading(kind,cleanHeading)};
   }
 
   if(/^```/.test(trimmed))return{style:'secondary',text:'⋯'};
