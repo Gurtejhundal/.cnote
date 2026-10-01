@@ -113,8 +113,9 @@ assert.ok(!studySource.includes('Draft only') && !studySource.includes('Write to
 const visualSource = fs.readFileSync(path.join(__dirname, '../out/visualMode.js'), 'utf8');
 assert.ok(!visualSource.includes('font-size: 1.28em') && !visualSource.includes('font-size: 1.14em'), 'Inline headings must not enlarge row height and overlap following notes');
 assert.ok(visualSource.includes("!['paragraph', 'section', 'definition'].includes(kind)"), 'Title-style notes must not duplicate boundary labels');
-assert.ok(visualSource.includes('collectEditingDefinitionBlock'), 'Definition comments must keep delimiters hidden while editing');
-assert.ok(visualSource.includes("block.kind === 'definition' ? '' : boundaryText"), 'Definition comments must not render boundary chrome');
+assert.ok(visualSource.includes("opacity: '0'"), 'Inline visual concealment must hide syntax-highlighted source tokens');
+assert.ok(!visualSource.includes('collectEditingDefinitionBlock'), 'Inline visual editing state must not special-case definition blocks');
+assert.ok(!visualSource.includes("block.kind === 'definition' ? '' : boundaryText"), 'Inline visual boundaries must be generic for every multiline note kind');
 
 const { SettingsPanel } = load('settingsPanel.js');
 const settingsHtml = new SettingsPanel().html();

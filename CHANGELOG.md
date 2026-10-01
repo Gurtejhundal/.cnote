@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.1.5 - 2026-10-01
+- Fix Inline Visual Mode module leaks for all multiline note kinds by using one raw/visual state rule.
+- Strengthen source concealment so syntax-highlighted comment openers do not bleed through visual notes.
+
 ## 7.1.4 - 2026-10-01
 - Fix Study Mode button handlers by removing the unsupported CSS.escape dependency from the webview script.
 - Keep definition comment delimiters hidden in Visual Mode, including while editing definition content.
