@@ -6,7 +6,7 @@ import { NOTE_KINDS, NoteBlock, NoteKind, parseNoteBlocks } from './parser';
 import { CodeNoteOutlineProvider } from './outline';
 import { ReviewStore } from './review';
 import { exportStudyPdf } from './pdfExport';
-import { runCodeCell, runDocument } from './runner';
+import { runCodeCellOutput, runDocument } from './runner';
 import { StudyPreviewManager } from './studyPreview';
 import { IndexedNote, WorkspaceNoteIndex } from './workspaceIndex';
 import { VisualModeManager } from './visualMode';
@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext): void {
   let refreshUi = (): void => {};
   const notebook = new StudyPreviewManager(
     runDocument,
-    runCodeCell,
+    runCodeCellOutput,
     exportFileNotes,
     exportStudyPdf,
     review,
@@ -195,7 +195,8 @@ async function applyTypingShortcut(
   if (isBusy() || event.contentChanges.length !== 1 || event.contentChanges[0].text !== ' ') return;
   const lineNo = event.contentChanges[0].range.start.line;
   const line = editor.document.lineAt(lineNo);
-  const snippet = expandTypingShortcut(editor.document.languageId, line.text);
+  const cfg = vscode.workspace.getConfiguration('codenote');
+  const snippet = expandTypingShortcut(editor.document.languageId, line.text, cfg.get('shortcut.noteTrigger', '--'), cfg.get('shortcut.headingTrigger', '#'));
   if (!snippet) return;
   const indent = line.text.match(/^\s*/)?.[0] ?? '';
   setBusy(true);

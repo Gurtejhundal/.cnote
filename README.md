@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://gurtejhundal.github.io/.cnote/"><b>🌐 the website</b></a> &nbsp; · &nbsp;
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.5.0.vsix"><b>⬇ grab .cnote 6.5.0</b></a> &nbsp; · &nbsp;
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.0.vsix"><b>⬇ grab .cnote 6.7.0</b></a> &nbsp; · &nbsp;
   <a href="#the-extension-is-free-the-ps5-is-not-"><b>🎮 the side quest</b></a>
 </p>
 
@@ -15,8 +15,8 @@
 ## download here 👇
 
 <p align="center">
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.5.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
-  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.5.0.vsix"><b>👇 Download .cnote 6.5.0 in one click ⚡</b></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.0.vsix"><img src="assets/download-pointer.png" alt="Smiling emoji pointing down at the .cnote download" width="170"></a><br>
+  <a href="https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.0.vsix"><b>👇 Download .cnote 6.7.0 in one click ⚡</b></a><br>
   <sub>VS Code → Extensions → … → Install from VSIX…</sub>
 </p>
 
@@ -48,7 +48,7 @@ V6.2.1 fixes multi-note drag selection. If your selection crosses several visual
 | Your situation | .cnote’s move |
 | --- | --- |
 | “these comments are a wall of text” | Headings, lists, code, checkboxes, quotes, and question/answer fields |
-| “exam tomorrow, vibes today” | **Notebook:** code + notes in cell order, per-cell Run / Debug, filters, quizzes, checkpoints |
+| “exam tomorrow, vibes today” | **Notebook:** editable code + note cells, per-cell Run / Debug, draft mode, filters, quizzes, checkpoints |
 | “i definitely knew this yesterday” | **Review:** Again / Hard / Good / Easy, plus due-quiz review |
 | “where did i explain binary search?” | **Workspace notebook:** search, tags, stats, and reindexing |
 | “let me send you my notes” | **Markdown exports** for file/workspace notes; **PDF** for Notebook |
@@ -58,7 +58,7 @@ V6.2.1 fixes multi-note drag selection. If your selection crosses several visual
 
 ### 8 note types that actually look different
 
-The Insert Note menu stays focused. Use **Note** for `// @note key line` and **Heading** for `// @section #Code`; both stay one source line. In C/C++/JS-style files, type `--` then Space for a note or `#` then Space for a heading. Three overlapping choices are not offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
+The Insert Note menu stays focused. Use **Note** for `// @note key line` and **Heading** for `// @section #Code`; both stay one source line. In C/C++/JS-style files, type `--` then Space for a note or `#` then Space for a heading. You can change both typing triggers in .cnote Settings. Three overlapping choices are not offered for new notes: `@paragraph`, `@section`, and `@checkpoint`. Old files using them still parse, so nothing breaks.
 
 | Type | Visual cue | Best for |
 | --- | --- | --- |
@@ -95,7 +95,7 @@ The opening boundary carries the note's semantic glyph, so a Definition, Warning
 
 <img src="assets/study-mode.png" alt="Real Notebook with note navigation, source code, a definition, and revealed quiz with review buttons" width="100%">
 
-Read in order. Run or debug each code cell. Filter the noise. Reveal the answer. Grade your recall. Export when you’re done.
+Read in order. Edit cells in draft mode, run code with output under the cell, then choose whether to write changes back to the source file. Reveal answers and export when you’re done.
 
 ### screenshot it like you mean it 📸
 
@@ -129,7 +129,7 @@ C / C++ / Java / JavaScript / TypeScript / Go / Rust / Python / Ruby / HTML / CS
 
 ## three steps. you’re in.
 
-1. [Download **codenote-6.5.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.5.0.vsix).
+1. [Download **codenote-6.7.0.vsix**](https://github.com/Gurtejhundal/.cnote/raw/refs/heads/main/downloads/codenote-6.7.0.vsix).
 2. In **VS Code 1.90+**, open **Extensions → … → Install from VSIX…** and select the file.
 3. Reload if prompted, open a supported source file, and hit **Ctrl/Cmd + Shift + F6**.
 

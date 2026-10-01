@@ -63,10 +63,10 @@ export function buildSingleLineNoteSnippet(languageId: string, kind: string, tex
   return undefined;
 }
 
-export function expandTypingShortcut(languageId: string, lineText: string): string | undefined {
+export function expandTypingShortcut(languageId: string, lineText: string, noteTrigger = '--', headingTrigger = '#'): string | undefined {
   const trimmed = lineText.trimStart();
-  if (trimmed === '-- ') return buildSingleLineNoteSnippet(languageId, 'note', '');
-  if (trimmed === '# ') return buildSingleLineNoteSnippet(languageId, 'section', '#');
+  if (noteTrigger && trimmed === `${noteTrigger} `) return buildSingleLineNoteSnippet(languageId, 'note', '');
+  if (headingTrigger && trimmed === `${headingTrigger} `) return buildSingleLineNoteSnippet(languageId, 'section', '#');
   return undefined;
 }
 

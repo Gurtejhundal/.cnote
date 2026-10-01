@@ -84,11 +84,18 @@ assert.ok(layoutCalls.length >= 2, 'Preview and PNG export both use the same lay
 const studySource = fs.readFileSync(path.join(__dirname, '../out/studyPreview.js'), 'utf8');
 assert.ok(studySource.includes('data-run-cell'), 'Notebook must render per-code-cell Run buttons');
 assert.ok(studySource.includes('data-debug-cell'), 'Notebook must render per-code-cell Debug buttons');
-assert.ok(studySource.includes('jsonForScript(codeCells)'), 'Notebook must share one serialized code-cell model with the webview script');
+assert.ok(studySource.includes('jsonForScript(cells)'), 'Notebook must share one serialized cell model with the webview script');
+assert.ok(studySource.includes('data-save-cell'), 'Notebook must allow saving edited cells');
+assert.ok(studySource.includes('data-delete-cell'), 'Notebook must allow removing cells');
+assert.ok(studySource.includes('data-output'), 'Notebook cell runs must render output under the cell');
+assert.ok(studySource.includes('Draft only') && studySource.includes('Write to source'), 'Notebook must expose draft/source write mode');
 assert.ok(!studySource.includes('>Source<'), 'Notebook note cards must not render Source buttons');
 
 const { SettingsPanel } = load('settingsPanel.js');
-const settingsScript = new SettingsPanel().html().match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
+const settingsHtml = new SettingsPanel().html();
+assert.ok(settingsHtml.includes('shortcut.noteTrigger'), 'Settings must expose note shortcut trigger');
+assert.ok(settingsHtml.includes('shortcut.headingTrigger'), 'Settings must expose heading shortcut trigger');
+const settingsScript = settingsHtml.match(/<script nonce="[^"]+">([\s\S]*?)<\/script>/)[1];
 assert.doesNotThrow(() => new vm.Script(settingsScript), 'Settings webview must contain valid JavaScript');
 
 console.log('Webviews parse; Snap preview, templates, escaping, and PNG export checks pass.');

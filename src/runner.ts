@@ -2,6 +2,13 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs/promises';
+import { exec } from 'child_process';
+
+export interface RunOutput {
+  ok: boolean;
+  output: string;
+  code?: number | null;
+}
 
 const DEFAULT_RUNNERS = new Set([
   'cpp', 'c', 'python', 'javascript', 'typescript', 'java', 'go', 'rust',
@@ -28,6 +35,19 @@ export async function runCodeCell(document: vscode.TextDocument, code: string, l
     vscode.window.showErrorMessage('Save the file before running cells.');
     return;
   }
+  const temp = await writeTempCell(document, code);
+  await runPath(document, temp, path.dirname(document.uri.fsPath), `Run ${label}`);
+}
+
+export async function runCodeCellOutput(document: vscode.TextDocument, code: string): Promise<RunOutput> {
+  if (document.isUntitled) return { ok: false, output: 'Save the file before running cells.' };
+  const temp = await writeTempCell(document, code);
+  const command = buildRunCommand(document.languageId, temp);
+  if (!command) return { ok: false, output: `No runner for ${document.languageId}. Add codenote.runCommands.${document.languageId} in Settings.` };
+  return executeCaptured(command, path.dirname(document.uri.fsPath));
+}
+
+async function writeTempCell(document: vscode.TextDocument, code: string): Promise<string> {
   const source = document.uri.fsPath;
   const ext = path.extname(source) || extensionForLanguage(document.languageId);
   const safeBase = path.basename(source, path.extname(source)).replace(/[^A-Za-z0-9_.-]/g, '-');
@@ -35,7 +55,7 @@ export async function runCodeCell(document: vscode.TextDocument, code: string, l
   const temp = path.join(dir, `${safeBase}-${Date.now()}${ext}`);
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(temp, code.replace(/\s+$/, '') + '\n', 'utf8');
-  await runPath(document, temp, path.dirname(source), `Run ${label}`);
+  return temp;
 }
 
 async function runPath(document: vscode.TextDocument, source: string, cwd: string, name: string): Promise<void> {
@@ -108,6 +128,15 @@ function buildRunCommand(languageId: string, source: string): string | undefined
     case 'powershell': return `pwsh -NoProfile -File ${q(source)}`;
     default: return undefined;
   }
+}
+
+function executeCaptured(command: string, cwd: string): Promise<RunOutput> {
+  return new Promise(resolve => {
+    exec(command, { cwd, timeout: 30000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+      const code = typeof (error as { code?: unknown } | null)?.code === 'number' ? (error as { code: number }).code : null;
+      resolve({ ok: !error, code, output: `${stdout || ''}${stderr || ''}`.trimEnd() || (error ? `Exited with code ${code ?? 1}` : 'Done.') });
+    });
+  });
 }
 
 function extensionForLanguage(languageId: string): string {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.7.0
+- Redesign Notebook cells so code and note cells are editable in the webview.
+- Add Draft only vs Write to source mode, with Save and Remove controls per cell.
+- Run code cells with captured output under the cell instead of opening the terminal.
+- Add configurable typing triggers for one-line notes and headings in Settings.
+
 ## 6.5.0
 - Redesign Notebook as compact study cells with per-code-cell Run and Debug actions.
 - Remove noisy Source buttons and duplicate note body text from Notebook cards.
