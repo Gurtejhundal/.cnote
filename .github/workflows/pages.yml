@@ -10,6 +10,7 @@ on:
       - 'assets/**'
       - 'media/readme/**'
       - 'downloads/**'
+      - 'package.json'
       - '.github/workflows/pages.yml'
   workflow_run:
     workflows: ['Build VSIX']
@@ -45,6 +46,61 @@ jobs:
           cp -R assets downloads _site/
           cp -R media/readme/. _site/media/readme/
           rm _site/assets/README.md
+
+      - name: Publish the current extension version on the site
+        shell: bash
+        run: |
+          CN_VERSION=$(node -p "require('./package.json').version")
+          export CN_VERSION
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          import re
+
+          version = os.environ['CN_VERSION']
+          path = Path('_site/index.html')
+          text = path.read_text(encoding='utf-8')
+
+          # Keep public version labels in sync with package.json automatically.
+          text = re.sub(r'Install \.cnote \d+\.\d+\.\d+', f'Install .cnote {version}', text)
+          text = re.sub(r'Marketplace install · version \d+\.\d+\.\d+', f'Marketplace install · version {version}', text)
+          text = re.sub(r'(<span class="button-meta">)\d+\.\d+\.\d+(</span>)', rf'\g<1>{version}\g<2>', text)
+
+          # The public Study copy must match the current v7.1.x implementation.
+          text = text.replace(
+              'Study turns the file into sections with read-only code, safe note editing, Focus Notes, quizzes, and checkpoints.',
+              'Study turns the file into sections with editable code cells, per-cell Run, editor-like shortcuts, Focus Notes, quizzes, and checkpoints.'
+          )
+          text = text.replace(
+              'Open a section-based reading view of your actual source. Code stays read-only, notes edit safely, Focus Notes hides code when you only want concepts, and Run File stays global.',
+              'Open a section-based study view of your actual source. Edit code cells in place, run each cell independently, use editor-like shortcuts, and switch on Focus Notes when you only want concepts.'
+          )
+          text = text.replace(
+              '<div><span>01</span><h3>edit safely.</h3><p>Code stays read-only. Note edits go back to source only after version checks.</p></div><div><span>02</span><h3>run the file.</h3><p>Run File stays global so Study does not pretend fragments are isolated cells.</p></div>',
+              '<div><span>01</span><h3>edit in place.</h3><p>Study code cells support familiar editing shortcuts, then Apply writes the cell back to the real source.</p></div><div><span>02</span><h3>run each cell.</h3><p>Use the ▶ button or Ctrl/Cmd + Enter to run the current Study cell and keep the output directly underneath it.</p></div>'
+          )
+
+          # Expose the freshly built VSIX publicly even before Marketplace catches up.
+          marketplace_button = f'<a class="button" href="https://marketplace.visualstudio.com/items?itemName=gurtejhundal.codenote">Install .cnote {version} <span aria-hidden="true">↓</span></a>'
+          manual_link = f'<a class="text-link" href="./downloads/codenote-{version}.vsix" download>Manual VSIX {version} ↓</a>'
+          if marketplace_button in text and manual_link not in text:
+              text = text.replace(marketplace_button, marketplace_button + manual_link)
+
+          text = text.replace(
+              'Search <b>.cnote</b>, or use the Marketplace page. Manual VSIX is the fallback.',
+              f'Search <b>.cnote</b>, use the Marketplace page, or download <a href="./downloads/codenote-{version}.vsix" download>the {version} VSIX directly</a>.'
+          )
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify public VSIX exists
+        shell: bash
+        run: |
+          CN_VERSION=$(node -p "require('./package.json').version")
+          test -f "_site/downloads/codenote-${CN_VERSION}.vsix"
+          grep -q "${CN_VERSION}" _site/index.html
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
